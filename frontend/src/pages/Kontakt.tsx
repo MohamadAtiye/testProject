@@ -101,6 +101,8 @@ export default function Kontakt() {
                   name="email"
                   type="email"
                   required
+                  aria-invalid={fieldErrors.email ? true : undefined}
+                  aria-describedby={fieldErrors.email ? "email-error" : undefined}
                   className={[
                     styles.input,
                     fieldErrors.email ? styles.inputError : null,
@@ -110,7 +112,9 @@ export default function Kontakt() {
                   placeholder="name@beispiel.de"
                 />
                 {fieldErrors.email && (
-                  <span className={styles.fieldError}>{fieldErrors.email}</span>
+                  <span id="email-error" className={styles.fieldError}>
+                    {fieldErrors.email}
+                  </span>
                 )}
               </div>
 
@@ -122,6 +126,8 @@ export default function Kontakt() {
                   id="phone"
                   name="phone"
                   type="tel"
+                  aria-invalid={fieldErrors.phone ? true : undefined}
+                  aria-describedby={fieldErrors.phone ? "phone-error" : undefined}
                   className={[
                     styles.input,
                     fieldErrors.phone ? styles.inputError : null,
@@ -131,7 +137,9 @@ export default function Kontakt() {
                   placeholder="+49 000 000 000"
                 />
                 {fieldErrors.phone && (
-                  <span className={styles.fieldError}>{fieldErrors.phone}</span>
+                  <span id="phone-error" className={styles.fieldError}>
+                    {fieldErrors.phone}
+                  </span>
                 )}
               </div>
 
@@ -144,6 +152,8 @@ export default function Kontakt() {
                   name="title"
                   type="text"
                   required
+                  aria-invalid={fieldErrors.title ? true : undefined}
+                  aria-describedby={fieldErrors.title ? "title-error" : undefined}
                   className={[
                     styles.input,
                     fieldErrors.title ? styles.inputError : null,
@@ -153,7 +163,9 @@ export default function Kontakt() {
                   placeholder="Worum geht es?"
                 />
                 {fieldErrors.title && (
-                  <span className={styles.fieldError}>{fieldErrors.title}</span>
+                  <span id="title-error" className={styles.fieldError}>
+                    {fieldErrors.title}
+                  </span>
                 )}
               </div>
 
@@ -166,6 +178,10 @@ export default function Kontakt() {
                   name="message"
                   rows={6}
                   required
+                  aria-invalid={fieldErrors.message ? true : undefined}
+                  aria-describedby={
+                    fieldErrors.message ? "message-error" : undefined
+                  }
                   className={[
                     styles.textarea,
                     fieldErrors.message ? styles.inputError : null,
@@ -175,7 +191,7 @@ export default function Kontakt() {
                   placeholder="Deine Nachricht an uns …"
                 />
                 {fieldErrors.message && (
-                  <span className={styles.fieldError}>
+                  <span id="message-error" className={styles.fieldError}>
                     {fieldErrors.message}
                   </span>
                 )}

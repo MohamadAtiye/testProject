@@ -1,6 +1,7 @@
 import { lazy, Suspense } from "react";
 import { Route, Routes, useLocation } from "react-router";
 import ScrollToHash from "./components/ScrollToHash";
+import Seo from "./components/Seo";
 import Header from "./sections/Header";
 import Footer from "./sections/Footer";
 import Home from "./pages/Home";
@@ -24,6 +25,7 @@ export default function App() {
 
   return (
     <>
+      <Seo />
       {!isAdmin && (
         <>
           <a className="skip-link" href="#main">

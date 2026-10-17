@@ -27,6 +27,32 @@ npm run preview  # preview the production build
 
 In development, requests to `/api/*` are proxied to the PHP API at `http://localhost:8000`.
 
+### Testing & quality
+
+```bash
+cd frontend
+npm test         # unit/component tests (Vitest + Testing Library)
+npm run coverage # coverage report
+npm run e2e      # end-to-end smoke tests (Playwright)
+npm run lint     # ESLint
+```
+
+- Unit/component tests live next to the code as `*.test.tsx`.
+- `src/App.a11y.test.tsx` runs **axe** over the main routes; color contrast is
+  out of scope there (jsdom has no rendering) and should be audited in a browser.
+- E2E needs a browser once: `npx playwright install chromium`.
+
+### SEO & accessibility
+
+- Per-route `title` / `description` / canonical / Open Graph via
+  `src/components/Seo.tsx` (React 19 document metadata) driven by
+  `src/data/seo.ts`. **Update the domain there before deploying.**
+- `public/robots.txt` and `public/sitemap.xml` are copied into `dist`. Update the
+  domain in the sitemap too.
+- The admin area is marked `noindex`.
+- Forms associate errors with inputs via `aria-invalid` / `aria-describedby`; a
+  skip link, `:focus-visible` styles and reduced-motion handling are in place.
+
 ## Backend
 
 ### PHP API

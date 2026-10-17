@@ -417,6 +417,8 @@ export default function ProjektStarten() {
                   required
                   value={goal}
                   onChange={(event) => setGoal(event.target.value)}
+                  aria-invalid={fieldErrors.goal ? true : undefined}
+                  aria-describedby={fieldErrors.goal ? "goal-error" : undefined}
                   className={[
                     styles.textarea,
                     fieldErrors.goal ? styles.inputError : null,
@@ -426,7 +428,9 @@ export default function ProjektStarten() {
                   placeholder="z. B. Wir sind ein Handwerksbetrieb und brauchen eine neue Website, über die Kunden einfach Termine anfragen können …"
                 />
                 {fieldErrors.goal ? (
-                  <p className={styles.fieldError}>{fieldErrors.goal}</p>
+                  <p id="goal-error" className={styles.fieldError}>
+                    {fieldErrors.goal}
+                  </p>
                 ) : (
                   <p className={styles.hint}>
                     Ein paar Sätze reichen – Details klären wir im Gespräch.
@@ -511,6 +515,12 @@ export default function ProjektStarten() {
                       name="name"
                       type="text"
                       required
+                      aria-invalid={
+                        fieldErrors["contact.name"] ? true : undefined
+                      }
+                      aria-describedby={
+                        fieldErrors["contact.name"] ? "name-error" : undefined
+                      }
                       className={[
                         styles.input,
                         fieldErrors["contact.name"] ? styles.inputError : null,
@@ -519,7 +529,7 @@ export default function ProjektStarten() {
                         .join(" ")}
                     />
                     {fieldErrors["contact.name"] && (
-                      <p className={styles.fieldError}>
+                      <p id="name-error" className={styles.fieldError}>
                         {fieldErrors["contact.name"]}
                       </p>
                     )}
@@ -547,6 +557,12 @@ export default function ProjektStarten() {
                       name="email"
                       type="email"
                       required
+                      aria-invalid={
+                        fieldErrors["contact.email"] ? true : undefined
+                      }
+                      aria-describedby={
+                        fieldErrors["contact.email"] ? "email-error" : undefined
+                      }
                       className={[
                         styles.input,
                         fieldErrors["contact.email"] ? styles.inputError : null,
@@ -555,7 +571,7 @@ export default function ProjektStarten() {
                         .join(" ")}
                     />
                     {fieldErrors["contact.email"] && (
-                      <p className={styles.fieldError}>
+                      <p id="email-error" className={styles.fieldError}>
                         {fieldErrors["contact.email"]}
                       </p>
                     )}
@@ -570,6 +586,12 @@ export default function ProjektStarten() {
                       id="phone"
                       name="phone"
                       type="tel"
+                      aria-invalid={
+                        fieldErrors["contact.phone"] ? true : undefined
+                      }
+                      aria-describedby={
+                        fieldErrors["contact.phone"] ? "phone-error" : undefined
+                      }
                       className={[
                         styles.input,
                         fieldErrors["contact.phone"] ? styles.inputError : null,
@@ -578,7 +600,7 @@ export default function ProjektStarten() {
                         .join(" ")}
                     />
                     {fieldErrors["contact.phone"] && (
-                      <p className={styles.fieldError}>
+                      <p id="phone-error" className={styles.fieldError}>
                         {fieldErrors["contact.phone"]}
                       </p>
                     )}
@@ -591,6 +613,10 @@ export default function ProjektStarten() {
                   type="checkbox"
                   name="consent"
                   required
+                  aria-invalid={fieldErrors.consent ? true : undefined}
+                  aria-describedby={
+                    fieldErrors.consent ? "consent-error" : undefined
+                  }
                   className={styles.checkbox}
                 />
                 <span>
@@ -599,7 +625,9 @@ export default function ProjektStarten() {
                 </span>
               </label>
               {fieldErrors.consent && (
-                <p className={styles.fieldError}>{fieldErrors.consent}</p>
+                <p id="consent-error" className={styles.fieldError}>
+                  {fieldErrors.consent}
+                </p>
               )}
 
               {formError && (
