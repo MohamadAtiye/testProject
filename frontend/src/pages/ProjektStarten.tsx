@@ -1,10 +1,20 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { FormEvent } from "react";
 import Container from "../components/Container";
 import Button from "../components/Button";
 import Icon from "../components/Icon";
 import type { IconName } from "../components/Icon";
+import { fetchAssistSuggestions } from "../api/assist";
+import type { AssistDraft, AssistSuggestions } from "../api/assist";
 import styles from "./ProjektStarten.module.css";
+
+const missingLabels: Record<string, string> = {
+  service: "Leistung",
+  engagement: "Art der Zusammenarbeit",
+  goal: "Beschreibung",
+  timeline: "Zeitrahmen",
+  budget: "Budget",
+};
 
 type ServiceId = "design" | "systems" | "consulting" | "mix";
 type EngagementId = "project" | "longterm";
@@ -67,11 +77,75 @@ const budgetOptions = [
 export default function ProjektStarten() {
   const [service, setService] = useState<ServiceId | "">("");
   const [engagement, setEngagement] = useState<EngagementId | "">("");
+  const [goal, setGoal] = useState("");
   const [timelineKind, setTimelineKind] = useState("");
   const [budgetRange, setBudgetRange] = useState("");
   const [status, setStatus] = useState<Status>("idle");
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [formError, setFormError] = useState("");
+  const [assist, setAssist] = useState<AssistSuggestions | null>(null);
+  const [assistLoading, setAssistLoading] = useState(false);
+
+  useEffect(() => {
+    const draft: AssistDraft = {};
+    if (service) {
+      draft.service = service;
+    }
+    if (engagement) {
+      draft.engagement = engagement;
+    }
+    if (goal.trim() !== "") {
+      draft.goal = goal;
+    }
+    if (timelineKind) {
+      draft.timeline = { kind: timelineKind };
+    }
+    if (budgetRange) {
+      draft.budget = {
+        range: budgetRange === "unknown" ? "" : budgetRange,
+        unknown: budgetRange === "unknown",
+      };
+    }
+
+    const hasInput = service !== "" || goal.trim().length >= 15;
+    const inactive = !hasInput || status === "loading" || status === "success";
+
+    const controller = new AbortController();
+
+    const timer = window.setTimeout(async () => {
+      if (controller.signal.aborted) {
+        return;
+      }
+
+      if (inactive) {
+        setAssist(null);
+        setAssistLoading(false);
+        return;
+      }
+
+      setAssistLoading(true);
+      const result = await fetchAssistSuggestions(draft, controller.signal);
+      if (controller.signal.aborted) {
+        return;
+      }
+
+      setAssist(
+        result.ok
+          ? {
+              summary: result.summary,
+              suggestions: result.suggestions,
+              missing: result.missing,
+            }
+          : null,
+      );
+      setAssistLoading(false);
+    }, 900);
+
+    return () => {
+      window.clearTimeout(timer);
+      controller.abort();
+    };
+  }, [service, engagement, goal, timelineKind, budgetRange, status]);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -156,8 +230,11 @@ export default function ProjektStarten() {
       form.reset();
       setService("");
       setEngagement("");
+      setGoal("");
       setTimelineKind("");
       setBudgetRange("");
+      setAssist(null);
+      setAssistLoading(false);
       setStatus("success");
     } catch {
       setFormError("Netzwerkfehler. Bitte versuche es später erneut.");
@@ -276,6 +353,8 @@ export default function ProjektStarten() {
                   name="goal"
                   rows={7}
                   required
+                  value={goal}
+                  onChange={(event) => setGoal(event.target.value)}
                   className={[
                     styles.textarea,
                     fieldErrors.goal ? styles.inputError : null,
@@ -292,6 +371,51 @@ export default function ProjektStarten() {
                   </p>
                 )}
               </div>
+
+              {(assistLoading || assist) && (
+                <aside className={styles.assist} aria-live="polite">
+                  <div className={styles.assistHead}>
+                    <span className={styles.assistTitle}>
+                      <Icon
+                        name="sparkles"
+                        size={18}
+                        className={styles.assistIcon}
+                      />
+                      Assistent
+                    </span>
+                    {assistLoading && (
+                      <span className={styles.assistLoading}>
+                        Vorschläge werden erstellt …
+                      </span>
+                    )}
+                  </div>
+
+                  {assist?.summary && (
+                    <p className={styles.assistSummary}>{assist.summary}</p>
+                  )}
+
+                  {assist && assist.suggestions.length > 0 && (
+                    <ul className={styles.assistList}>
+                      {assist.suggestions.map((suggestion, index) => (
+                        <li key={index}>{suggestion}</li>
+                      ))}
+                    </ul>
+                  )}
+
+                  {assist && assist.missing.length > 0 && (
+                    <div className={styles.assistMissing}>
+                      <span className={styles.assistMissingLabel}>
+                        Noch offen:
+                      </span>
+                      {assist.missing.map((field) => (
+                        <span key={field} className={styles.assistChip}>
+                          {missingLabels[field] ?? field}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                </aside>
+              )}
 
               <details className={styles.optional}>
                 <summary className={styles.summary}>

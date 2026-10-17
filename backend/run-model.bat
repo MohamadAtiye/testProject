@@ -21,16 +21,24 @@ if "%AI_MODEL_PATH%"=="" (
 :found
 
 if "%AI_PORT%"=="" set "AI_PORT=8080"
+if "%AI_CTX%"=="" set "AI_CTX=4096"
+if "%AI_NGL%"=="" set "AI_NGL=99"
+if "%AI_THREADS%"=="" set "AI_THREADS=8"
 
 echo [model] serving "%MODEL%"
 echo [model] http://127.0.0.1:%AI_PORT%  (internal only)
+echo [model] gpu offload -ngl %AI_NGL%  ^| ctx %AI_CTX%  ^| kv q8_0
 
 "tools\llama.cpp\llama-server.exe" ^
   -m "%MODEL%" ^
   --host 127.0.0.1 ^
   --port %AI_PORT% ^
-  -c 8192 ^
+  -c %AI_CTX% ^
+  -ngl %AI_NGL% ^
+  -fa on ^
+  -ctk q8_0 ^
+  -ctv q8_0 ^
+  -t %AI_THREADS% ^
   -np 1 ^
-  -t %NUMBER_OF_PROCESSORS% ^
   --jinja ^
   --no-webui

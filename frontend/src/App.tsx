@@ -1,3 +1,4 @@
+import { lazy, Suspense } from "react";
 import { Route, Routes, useLocation } from "react-router";
 import ScrollToHash from "./components/ScrollToHash";
 import Header from "./sections/Header";
@@ -12,8 +13,10 @@ import Systems from "./pages/Systems";
 import Consulting from "./pages/Consulting";
 import Impressum from "./pages/Impressum";
 import Datenschutz from "./pages/Datenschutz";
-import Admin from "./admin/pages/Admin";
 import NotFound from "./pages/NotFound";
+
+// Admin (and its chat dependencies) is split out so public pages stay lean.
+const Admin = lazy(() => import("./admin/pages/Admin"));
 
 export default function App() {
   const { pathname } = useLocation();
@@ -42,7 +45,14 @@ export default function App() {
           <Route path="/consulting" element={<Consulting />} />
           <Route path="/impressum" element={<Impressum />} />
           <Route path="/datenschutz" element={<Datenschutz />} />
-          <Route path="/admin/*" element={<Admin />} />
+          <Route
+            path="/admin/*"
+            element={
+              <Suspense fallback={<p style={{ padding: 24 }}>Laden …</p>}>
+                <Admin />
+              </Suspense>
+            }
+          />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </main>

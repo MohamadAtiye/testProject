@@ -1,5 +1,14 @@
-import { useEffect, useRef, useState } from "react";
-import Button from "../../components/Button";
+import { useState } from "react";
+import {
+  ChatContainer,
+  MainContainer,
+  Message,
+  MessageInput,
+  MessageList,
+  TypingIndicator,
+} from "@chatscope/chat-ui-kit-react";
+import "@chatscope/chat-ui-kit-styles/dist/default/styles.min.css";
+import ReactMarkdown from "react-markdown";
 import { sendChat } from "../api";
 import type { ChatMessage } from "../api";
 import styles from "./AdminChat.module.css";
@@ -10,24 +19,17 @@ type AdminChatProps = {
 
 export default function AdminChat({ onLogout }: AdminChatProps) {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
-  const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const endRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    endRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
-  }, [messages, loading]);
-
-  async function send() {
-    const text = input.trim();
-    if (text === "" || loading) {
+  async function send(text: string) {
+    const value = text.trim();
+    if (value === "" || loading) {
       return;
     }
 
-    const next: ChatMessage[] = [...messages, { role: "user", content: text }];
+    const next: ChatMessage[] = [...messages, { role: "user", content: value }];
     setMessages(next);
-    setInput("");
     setLoading(true);
     setError("");
 
@@ -56,69 +58,65 @@ export default function AdminChat({ onLogout }: AdminChatProps) {
         </span>
       </div>
 
-      <div className={styles.thread}>
-        {messages.length === 0 ? (
-          <p className={styles.empty}>
-            Stell dem Modell eine Frage, um es zu testen.
-          </p>
-        ) : (
-          messages.map((message, index) => (
-            <div
-              key={index}
-              className={
-                message.role === "user" ? styles.rowUser : styles.rowBot
-              }
-            >
-              <div
-                className={
-                  message.role === "user" ? styles.bubbleUser : styles.bubbleBot
-                }
-              >
-                {message.content}
-              </div>
-            </div>
-          ))
-        )}
-
-        {loading && (
-          <div className={styles.rowBot}>
-            <div className={styles.bubbleBot}>
-              <span className={styles.typing}>Modell antwortet …</span>
-            </div>
-          </div>
-        )}
-
-        <div ref={endRef} />
-      </div>
-
       {error && (
         <p className={styles.error} role="alert">
           {error}
         </p>
       )}
 
-      <div className={styles.composer}>
-        <textarea
-          className={styles.input}
-          value={input}
-          onChange={(event) => setInput(event.target.value)}
-          onKeyDown={(event) => {
-            if (event.key === "Enter" && !event.shiftKey) {
-              event.preventDefault();
-              send();
-            }
-          }}
-          placeholder="Nachricht an das Modell … (Enter zum Senden)"
-          rows={2}
-        />
-        <Button
-          variant="primary"
-          withArrow
-          onClick={send}
-          disabled={loading || input.trim() === ""}
-        >
-          Senden
-        </Button>
+      <div className={styles.chat}>
+        <MainContainer>
+          <ChatContainer>
+            <MessageList
+              autoScrollToBottom
+              scrollBehavior="smooth"
+              typingIndicator={
+                loading ? (
+                  <TypingIndicator content="Modell antwortet …" />
+                ) : undefined
+              }
+            >
+              {messages.length === 0 ? (
+                <MessageList.Content>
+                  <p className={styles.empty}>
+                    Stell dem Modell eine Frage, um es zu testen.
+                  </p>
+                </MessageList.Content>
+              ) : (
+                messages.map((message, index) => {
+                  const incoming = message.role === "assistant";
+
+                  return (
+                    <Message
+                      key={index}
+                      model={{
+                        message: incoming ? undefined : message.content,
+                        sender: incoming ? "Modell" : "Admin",
+                        direction: incoming ? "incoming" : "outgoing",
+                        position: "single",
+                      }}
+                    >
+                      {incoming && (
+                        <Message.CustomContent>
+                          <ReactMarkdown>{message.content}</ReactMarkdown>
+                        </Message.CustomContent>
+                      )}
+                    </Message>
+                  );
+                })
+              )}
+            </MessageList>
+
+            <MessageInput
+              placeholder="Nachricht an das Modell …"
+              attachButton={false}
+              disabled={loading}
+              onSend={(_html, textContent) => {
+                void send(textContent);
+              }}
+            />
+          </ChatContainer>
+        </MainContainer>
       </div>
     </section>
   );
