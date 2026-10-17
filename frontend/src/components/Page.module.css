@@ -1,0 +1,39 @@
+.page {
+  padding-block: clamp(56px, 9vw, 120px);
+}
+
+.header {
+  max-width: 760px;
+}
+
+.eyebrow {
+  display: inline-block;
+  margin-bottom: 14px;
+  font-family: var(--font-heading);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 2.5px;
+  text-transform: uppercase;
+  color: var(--gold);
+}
+
+.title {
+  font-size: clamp(32px, 6vw, 56px);
+  color: var(--white);
+}
+
+.body {
+  margin-top: 28px;
+  max-width: 760px;
+  font-size: 18px;
+  line-height: 1.75;
+  color: var(--text-light);
+}
+
+.body p + p {
+  margin-top: 18px;
+}
+
+.body a {
+  color: var(--gold);
+}

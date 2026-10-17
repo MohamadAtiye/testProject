@@ -1,0 +1,90 @@
+.section {
+  background: var(--surface-light);
+  color: var(--text-dark);
+  padding-block: 32px;
+}
+
+.inner {
+  display: grid;
+  grid-template-columns: minmax(280px, 1fr) 1.6fr;
+  gap: clamp(32px, 6vw, 80px);
+  align-items: center;
+}
+
+.title {
+  font-size: 28px;
+  line-height: 1.1;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+.rule {
+  display: block;
+  width: 64px;
+  height: 3px;
+  margin: 22px 0;
+  background: var(--gold);
+}
+
+.text {
+  max-width: 46ch;
+  line-height: 1.7;
+  color: var(--text-dark-muted);
+}
+
+.values {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.value {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 18px;
+  padding: 8px 20px;
+  text-align: center;
+}
+
+.value + .value {
+  border-left: 1px solid var(--border-light);
+}
+
+.icon {
+  color: var(--navy);
+}
+
+.valueTitle {
+  font-family: var(--font-heading);
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.4;
+  color: var(--text-dark);
+}
+
+@media (max-width: 1024px) {
+  .inner {
+    grid-template-columns: 1fr;
+  }
+
+  .values {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 28px 0;
+  }
+
+  .value:nth-child(odd) {
+    border-left: 0;
+  }
+}
+
+@media (max-width: 520px) {
+  .values {
+    grid-template-columns: 1fr;
+  }
+
+  .value + .value {
+    padding-top: 24px;
+    border-left: 0;
+    border-top: 1px solid var(--border-light);
+  }
+}

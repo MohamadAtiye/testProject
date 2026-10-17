@@ -1,0 +1,35 @@
+.link {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-family: var(--font-heading);
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+  text-decoration: none;
+  transition: color 0.2s var(--ease);
+}
+
+.light {
+  color: var(--white);
+}
+
+.light:hover {
+  color: var(--gold);
+}
+
+.dark {
+  color: var(--text-dark);
+}
+
+.dark:hover {
+  color: var(--gold);
+}
+
+.arrow {
+  transition: transform 0.2s var(--ease);
+}
+
+.link:hover .arrow {
+  transform: translateX(3px);
+}
