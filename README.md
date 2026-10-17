@@ -38,8 +38,9 @@ serve.bat        # runs: php -S localhost:8000  -> serves /api/...
 
 Endpoints are served from `backend/api/`, e.g.:
 
-- `POST /api/contact.php` — receive a contact request
-- `GET  /api/health.php`  — health check
+- `POST /api/contact.php`         — receive a contact request
+- `POST /api/project/submit.php`  — receive a "Projekt starten" request (→ `backend/api/projects.json`)
+- `GET  /api/health.php`          — health check
 
 ### ML layer (local, not exposed)
 

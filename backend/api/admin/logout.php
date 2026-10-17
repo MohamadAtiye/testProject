@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 require __DIR__ . '/../../src/auth.php';
 
-header('Content-Type: application/json; charset=utf-8');
-
 start_admin_session();
 
 $_SESSION = [];
@@ -28,4 +26,4 @@ if (ini_get('session.use_cookies')) {
 
 session_destroy();
 
-echo json_encode(['ok' => true]);
+respond_json(200, ['ok' => true]);

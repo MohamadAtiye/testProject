@@ -4,19 +4,11 @@ declare(strict_types=1);
 
 require __DIR__ . '/../../src/auth.php';
 
-header('Content-Type: application/json; charset=utf-8');
-
 if (($_SERVER['REQUEST_METHOD'] ?? '') !== 'POST') {
-    http_response_code(405);
-    echo json_encode(['ok' => false, 'error' => 'Methode nicht erlaubt.']);
-    exit;
+    respond_json(405, ['ok' => false, 'error' => 'Methode nicht erlaubt.']);
 }
 
-$raw = file_get_contents('php://input');
-$input = json_decode($raw ?: '', true);
-if (!is_array($input)) {
-    $input = $_POST;
-}
+$input = read_request_body();
 
 $email = trim((string) ($input['email'] ?? ''));
 $password = (string) ($input['password'] ?? '');
@@ -24,22 +16,18 @@ $password = (string) ($input['password'] ?? '');
 $credentials = admin_credentials();
 
 if ($credentials === null) {
-    http_response_code(500);
-    echo json_encode(['ok' => false, 'error' => 'Admin-Zugang ist nicht konfiguriert.']);
-    exit;
+    respond_json(500, ['ok' => false, 'error' => 'Admin-Zugang ist nicht konfiguriert.']);
 }
 
 $emailMatches = strcasecmp($email, $credentials['email']) === 0;
 $passwordMatches = hash_equals($credentials['password'], $password);
 
 if ($email === '' || $password === '' || !$emailMatches || !$passwordMatches) {
-    http_response_code(401);
-    echo json_encode(['ok' => false, 'error' => 'Ungültige Zugangsdaten.']);
-    exit;
+    respond_json(401, ['ok' => false, 'error' => 'Ungültige Zugangsdaten.']);
 }
 
 start_admin_session();
 session_regenerate_id(true);
 $_SESSION['admin_email'] = $credentials['email'];
 
-echo json_encode(['ok' => true, 'email' => $credentials['email']]);
+respond_json(200, ['ok' => true, 'email' => $credentials['email']]);

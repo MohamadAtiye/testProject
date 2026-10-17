@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 require_once __DIR__ . '/env.php';
+require_once __DIR__ . '/http.php';
 
 load_env(dirname(__DIR__) . '/.env');
 
@@ -60,9 +61,5 @@ function require_admin(): string
         return $email;
     }
 
-    http_response_code(401);
-    header('Content-Type: application/json; charset=utf-8');
-    echo json_encode(['ok' => false, 'error' => 'Nicht angemeldet.']);
-
-    exit;
+    respond_json(401, ['ok' => false, 'error' => 'Nicht angemeldet.']);
 }
