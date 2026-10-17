@@ -139,7 +139,7 @@ export default function ProjektStarten() {
           : null,
       );
       setAssistLoading(false);
-    }, 900);
+    }, 3000);
 
     return () => {
       window.clearTimeout(timer);
@@ -340,84 +340,7 @@ export default function ProjektStarten() {
                 )}
               </fieldset>
 
-              <div className={styles.section}>
-                <label className={styles.sectionTitle} htmlFor="goal">
-                  Beschreib dein Vorhaben
-                </label>
-                <p className={styles.sectionHint}>
-                  Am hilfreichsten sind: Ausgangslage, Ziel und was dir wichtig
-                  ist.
-                </p>
-                <textarea
-                  id="goal"
-                  name="goal"
-                  rows={7}
-                  required
-                  value={goal}
-                  onChange={(event) => setGoal(event.target.value)}
-                  className={[
-                    styles.textarea,
-                    fieldErrors.goal ? styles.inputError : null,
-                  ]
-                    .filter(Boolean)
-                    .join(" ")}
-                  placeholder="z. B. Wir sind ein Handwerksbetrieb und brauchen eine neue Website, über die Kunden einfach Termine anfragen können …"
-                />
-                {fieldErrors.goal ? (
-                  <p className={styles.fieldError}>{fieldErrors.goal}</p>
-                ) : (
-                  <p className={styles.hint}>
-                    Ein paar Sätze reichen – Details klären wir im Gespräch.
-                  </p>
-                )}
-              </div>
-
-              {(assistLoading || assist) && (
-                <aside className={styles.assist} aria-live="polite">
-                  <div className={styles.assistHead}>
-                    <span className={styles.assistTitle}>
-                      <Icon
-                        name="sparkles"
-                        size={18}
-                        className={styles.assistIcon}
-                      />
-                      Assistent
-                    </span>
-                    {assistLoading && (
-                      <span className={styles.assistLoading}>
-                        Vorschläge werden erstellt …
-                      </span>
-                    )}
-                  </div>
-
-                  {assist?.summary && (
-                    <p className={styles.assistSummary}>{assist.summary}</p>
-                  )}
-
-                  {assist && assist.suggestions.length > 0 && (
-                    <ul className={styles.assistList}>
-                      {assist.suggestions.map((suggestion, index) => (
-                        <li key={index}>{suggestion}</li>
-                      ))}
-                    </ul>
-                  )}
-
-                  {assist && assist.missing.length > 0 && (
-                    <div className={styles.assistMissing}>
-                      <span className={styles.assistMissingLabel}>
-                        Noch offen:
-                      </span>
-                      {assist.missing.map((field) => (
-                        <span key={field} className={styles.assistChip}>
-                          {missingLabels[field] ?? field}
-                        </span>
-                      ))}
-                    </div>
-                  )}
-                </aside>
-              )}
-
-              <details className={styles.optional}>
+              <details className={styles.optional} open>
                 <summary className={styles.summary}>
                   Optional: Zeitrahmen &amp; Budget angeben
                 </summary>
@@ -478,6 +401,103 @@ export default function ProjektStarten() {
                   </div>
                 </div>
               </details>
+
+              <div className={styles.section}>
+                <label className={styles.sectionTitle} htmlFor="goal">
+                  Beschreib dein Vorhaben
+                </label>
+                <p className={styles.sectionHint}>
+                  Am hilfreichsten sind: Ausgangslage, Ziel und was dir wichtig
+                  ist.
+                </p>
+                <textarea
+                  id="goal"
+                  name="goal"
+                  rows={7}
+                  required
+                  value={goal}
+                  onChange={(event) => setGoal(event.target.value)}
+                  className={[
+                    styles.textarea,
+                    fieldErrors.goal ? styles.inputError : null,
+                  ]
+                    .filter(Boolean)
+                    .join(" ")}
+                  placeholder="z. B. Wir sind ein Handwerksbetrieb und brauchen eine neue Website, über die Kunden einfach Termine anfragen können …"
+                />
+                {fieldErrors.goal ? (
+                  <p className={styles.fieldError}>{fieldErrors.goal}</p>
+                ) : (
+                  <p className={styles.hint}>
+                    Ein paar Sätze reichen – Details klären wir im Gespräch.
+                  </p>
+                )}
+              </div>
+
+              {(assistLoading || assist) && (
+                <aside className={styles.assist} aria-live="polite">
+                  <div className={styles.assistHead}>
+                    <span className={styles.assistTitle}>
+                      <Icon
+                        name="sparkles"
+                        size={18}
+                        className={styles.assistIcon}
+                      />
+                      Assistent
+                    </span>
+                    {assistLoading && (
+                      <span className={styles.assistThinking}>
+                        <span className={styles.assistDots} aria-hidden="true">
+                          <span />
+                          <span />
+                          <span />
+                        </span>
+                        <span className={styles.assistThinkingLabel}>
+                          Assistent denkt nach
+                        </span>
+                      </span>
+                    )}
+                  </div>
+
+                  {assistLoading && !assist && (
+                    <div className={styles.assistSkeleton} aria-hidden="true">
+                      <span className={styles.assistSkeletonLine} />
+                      <span className={styles.assistSkeletonLine} />
+                      <span className={styles.assistSkeletonLine} />
+                    </div>
+                  )}
+
+                  {assist?.summary && (
+                    <p className={styles.assistSummary}>{assist.summary}</p>
+                  )}
+
+                  {assist && assist.suggestions.length > 0 && (
+                    <ul className={styles.assistList}>
+                      {assist.suggestions.map((suggestion, index) => (
+                        <li key={index}>{suggestion}</li>
+                      ))}
+                    </ul>
+                  )}
+
+                  {assist && assist.missing.length > 0 && (
+                    <div className={styles.assistMissing}>
+                      <span className={styles.assistMissingLabel}>
+                        Noch offen:
+                      </span>
+                      {assist.missing.map((field) => (
+                        <span key={field} className={styles.assistChip}>
+                          {missingLabels[field] ?? field}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+
+                  <p className={styles.assistNote}>
+                    Unverbindliche Vorschläge – du kannst Details auch einfach
+                    später mit uns klären.
+                  </p>
+                </aside>
+              )}
 
               <fieldset className={styles.section}>
                 <legend className={styles.sectionTitle}>Kontakt</legend>

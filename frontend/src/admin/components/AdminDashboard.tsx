@@ -93,6 +93,12 @@ export default function AdminDashboard({
             bucket={stats.project}
             to="/admin/projects"
           />
+          <StatCard
+            title="Offene Projekte"
+            icon="chart"
+            bucket={stats.openProjects}
+            to="/admin/projects"
+          />
         </div>
       ) : null}
 

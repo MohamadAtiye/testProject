@@ -1,5 +1,6 @@
 import { useState } from "react";
 import {
+  Avatar,
   ChatContainer,
   MainContainer,
   Message,
@@ -9,6 +10,8 @@ import {
 } from "@chatscope/chat-ui-kit-react";
 import "@chatscope/chat-ui-kit-styles/dist/default/styles.min.css";
 import ReactMarkdown from "react-markdown";
+import Button from "../../components/Button";
+import Icon from "../../components/Icon";
 import { sendChat } from "../api";
 import type { ChatMessage } from "../api";
 import styles from "./AdminChat.module.css";
@@ -16,6 +19,13 @@ import styles from "./AdminChat.module.css";
 type AdminChatProps = {
   onLogout: () => void;
 };
+
+const starterPrompts = [
+  "Was ist heute Neues eingegangen?",
+  "Gibt es Anfragen, die noch unbeantwortet sind?",
+  "Fasse die neuesten Projektanfragen zusammen",
+  "Wie viele Anfragen kamen diese Woche?",
+];
 
 export default function AdminChat({ onLogout }: AdminChatProps) {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -49,13 +59,27 @@ export default function AdminChat({ onLogout }: AdminChatProps) {
     setLoading(false);
   }
 
+  function clear() {
+    setMessages([]);
+    setError("");
+  }
+
   return (
     <section className={styles.card}>
       <div className={styles.head}>
-        <h2 className={styles.title}>Modell testen</h2>
-        <span className={styles.hint}>
-          Direkter Chat mit dem lokalen Modell
+        <span className={styles.title}>
+          <span className={styles.dot} aria-hidden="true" />
+          Modell testen
         </span>
+        {messages.length > 0 ? (
+          <Button variant="ghost" size="sm" onClick={clear} disabled={loading}>
+            Verlauf leeren
+          </Button>
+        ) : (
+          <span className={styles.hint}>
+            Direkter Chat mit dem lokalen Modell
+          </span>
+        )}
       </div>
 
       {error && (
@@ -78,9 +102,28 @@ export default function AdminChat({ onLogout }: AdminChatProps) {
             >
               {messages.length === 0 ? (
                 <MessageList.Content>
-                  <p className={styles.empty}>
-                    Stell dem Modell eine Frage, um es zu testen.
-                  </p>
+                  <div className={styles.empty}>
+                    <Icon
+                      name="sparkles"
+                      size={22}
+                      className={styles.emptyIcon}
+                    />
+                    <p className={styles.emptyText}>
+                      Stell dem Modell eine Frage, um es zu testen.
+                    </p>
+                    <div className={styles.pills}>
+                      {starterPrompts.map((prompt) => (
+                        <button
+                          key={prompt}
+                          type="button"
+                          className={styles.pill}
+                          onClick={() => void send(prompt)}
+                        >
+                          {prompt}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
                 </MessageList.Content>
               ) : (
                 messages.map((message, index) => {
@@ -95,7 +138,14 @@ export default function AdminChat({ onLogout }: AdminChatProps) {
                         direction: incoming ? "incoming" : "outgoing",
                         position: "single",
                       }}
+                      avatarPosition={incoming ? "tl" : "tr"}
                     >
+                      <Avatar size="sm" className={styles.avatar}>
+                        <Icon
+                          name={incoming ? "sparkles" : "people"}
+                          size={15}
+                        />
+                      </Avatar>
                       {incoming && (
                         <Message.CustomContent>
                           <ReactMarkdown>{message.content}</ReactMarkdown>

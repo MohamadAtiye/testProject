@@ -31,17 +31,50 @@ function load_prompt(string $name): string
 }
 
 /**
- * The list of prompt modules used by default, from AI_PROMPTS
- * (comma-separated) or the built-in fallback.
+ * Resolve a comma-separated prompt-module list from an env var, falling back
+ * to the given defaults when unset or empty.
+ *
+ * @param string[] $default
+ * @return string[]
+ */
+function prompt_modules(string $envKey, array $default): array
+{
+    $configured = (string) env($envKey, implode(',', $default));
+    $names = array_values(array_filter(array_map('trim', explode(',', $configured))));
+
+    return $names !== [] ? $names : $default;
+}
+
+/**
+ * Default modules used when build_system_prompt() is called without a list.
+ * Configurable via AI_PROMPTS.
  *
  * @return string[]
  */
 function system_prompt_modules(): array
 {
-    $configured = (string) env('AI_PROMPTS', 'persona,domain');
-    $names = array_values(array_filter(array_map('trim', explode(',', $configured))));
+    return prompt_modules('AI_PROMPTS', ['persona', 'domain']);
+}
 
-    return $names !== [] ? $names : ['persona', 'domain'];
+/**
+ * Modules for the admin chat. Configurable via AI_ADMIN_PROMPTS.
+ *
+ * @return string[]
+ */
+function admin_prompt_modules(): array
+{
+    return prompt_modules('AI_ADMIN_PROMPTS', ['persona', 'domain', 'admin']);
+}
+
+/**
+ * Modules for the public form-assist endpoint. Configurable via
+ * AI_ASSIST_PROMPTS.
+ *
+ * @return string[]
+ */
+function assist_prompt_modules(): array
+{
+    return prompt_modules('AI_ASSIST_PROMPTS', ['assist', 'assist_goals']);
 }
 
 /**

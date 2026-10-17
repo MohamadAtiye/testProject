@@ -83,7 +83,7 @@ if (!isset($draft['goal']) && !isset($draft['service'])) {
 
 // --- Server-owned prompt; draft is data, not instructions --------------------
 $messages = [
-    ['role' => 'system', 'content' => build_system_prompt(['assist'])],
+    ['role' => 'system', 'content' => build_system_prompt(assist_prompt_modules())],
     [
         'role' => 'user',
         'content' => untrusted_block(
@@ -112,9 +112,11 @@ foreach ((array) ($data['suggestions'] ?? []) as $suggestion) {
     }
 }
 
+// `missing` is derived from the draft deterministically (fields the visitor
+// hasn't provided), not from the model, so it can't contradict the input.
 $missing = [];
-foreach ((array) ($data['missing'] ?? []) as $field) {
-    if (in_array($field, ['service', 'engagement', 'goal', 'timeline', 'budget'], true)) {
+foreach (['service', 'engagement', 'goal', 'timeline', 'budget'] as $field) {
+    if (!isset($draft[$field])) {
         $missing[] = $field;
     }
 }
@@ -122,6 +124,6 @@ foreach ((array) ($data['missing'] ?? []) as $field) {
 respond_json(200, [
     'ok' => true,
     'summary' => mb_substr(trim((string) ($data['summary'] ?? '')), 0, 200),
-    'suggestions' => array_slice($suggestions, 0, 5),
-    'missing' => array_values(array_unique($missing)),
+    'suggestions' => array_slice($suggestions, 0, 4),
+    'missing' => $missing,
 ]);

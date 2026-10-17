@@ -52,7 +52,7 @@ if (count($clean) > 20) {
 // what the client sent. The current date is appended so relative questions
 // ("today", "this week") can be turned into tool filters. It only changes once
 // per day, so prompt-prefix caching within a day is unaffected.
-$systemPrompt = build_system_prompt(['persona', 'domain', 'admin'])
+$systemPrompt = build_system_prompt(admin_prompt_modules())
     . "\n\n---\n\n# Aktuelles Datum\n\nHeute ist " . date('Y-m-d') . " (" . date('l') . ")."
     . " Beziehe \"heute\" und \"diese Woche\" auf dieses Datum.";
 

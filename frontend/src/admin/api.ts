@@ -8,6 +8,7 @@ export type Stats = {
   generatedAt: string;
   contact: Bucket;
   project: Bucket;
+  openProjects: Bucket;
 };
 
 export type StatsResult =
