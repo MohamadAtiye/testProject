@@ -1,0 +1,92 @@
+[
+  {
+    "id": "a1b2c3d4e5f60801",
+    "service": "design",
+    "engagement": "project",
+    "goal": "Wir sind ein Handwerksbetrieb und brauchen eine neue Website, über die Kunden einfach Termine anfragen können. Wichtig sind eine Galerie unserer Projekte und ein klarer Kontaktbereich.",
+    "timeline": { "kind": "fixed", "date": "2026-12-01" },
+    "budget": { "range": "5-10k", "unknown": false },
+    "contact": {
+      "name": "Max Finke",
+      "company": "Finke GmbH",
+      "email": "max@finke-handwerk.de",
+      "phone": "+49 531 234567"
+    },
+    "consent": true,
+    "status": "new",
+    "createdAt": "2026-10-17T09:05:00+00:00",
+    "ip": "203.0.113.21"
+  },
+  {
+    "id": "a1b2c3d4e5f60802",
+    "service": "systems",
+    "engagement": "longterm",
+    "goal": "Wir möchten unsere internen Abläufe automatisieren und verschiedene Systeme wie CRM und Rechnungsstellung miteinander verbinden. Aktuell läuft vieles manuell.",
+    "timeline": { "kind": "asap", "date": null },
+    "budget": { "range": null, "unknown": true },
+    "contact": {
+      "name": "Sofia Wagner",
+      "company": "Triova",
+      "email": "s.wagner@triova.de",
+      "phone": "+49 30 987654"
+    },
+    "consent": true,
+    "status": "new",
+    "createdAt": "2026-10-17T13:40:00+00:00",
+    "ip": "203.0.113.22"
+  },
+  {
+    "id": "a1b2c3d4e5f60803",
+    "service": "consulting",
+    "engagement": "project",
+    "goal": "Unsere Marke wirkt uneinheitlich über die Kanäle. Wir brauchen eine klare Positionierung und ein Strategiepapier als Grundlage für alle weiteren Maßnahmen.",
+    "timeline": { "kind": "flexible", "date": null },
+    "budget": { "range": "10-25k", "unknown": false },
+    "contact": {
+      "name": "Jonas Keller",
+      "company": "Schrämmer",
+      "email": "j.keller@schraemmer.de",
+      "phone": ""
+    },
+    "consent": true,
+    "status": "new",
+    "createdAt": "2026-10-15T10:15:00+00:00",
+    "ip": "203.0.113.23"
+  },
+  {
+    "id": "a1b2c3d4e5f60804",
+    "service": "mix",
+    "engagement": "longterm",
+    "goal": "Wir starten ein neues Produkt und brauchen Marke, Website und die dazugehörige Software aus einer Hand – langfristig begleitet.",
+    "timeline": { "kind": "flexible", "date": null },
+    "budget": { "range": null, "unknown": false },
+    "contact": {
+      "name": "Anna Berger",
+      "company": "Neues Produkt UG",
+      "email": "anna@neuesprodukt.de",
+      "phone": "+49 40 555666"
+    },
+    "consent": true,
+    "status": "new",
+    "createdAt": "2026-10-13T16:22:00+00:00",
+    "ip": "203.0.113.24"
+  },
+  {
+    "id": "a1b2c3d4e5f60805",
+    "service": "design",
+    "engagement": "project",
+    "goal": "Ein kompaktes Redesign unseres Logos und eine kurze Markenrichtlinie. Einsatz vor allem im Printbereich.",
+    "timeline": { "kind": "asap", "date": null },
+    "budget": { "range": "<5k", "unknown": false },
+    "contact": {
+      "name": "Lena Hoffmann",
+      "company": "",
+      "email": "lena@beispiel.de",
+      "phone": ""
+    },
+    "consent": true,
+    "status": "new",
+    "createdAt": "2026-10-05T08:00:00+00:00",
+    "ip": "203.0.113.25"
+  }
+]

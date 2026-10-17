@@ -1,0 +1,51 @@
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(20px, 3vw, 32px);
+}
+
+.head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.title {
+  font-size: clamp(26px, 4vw, 36px);
+  color: var(--white);
+}
+
+.subtitle {
+  margin-top: 6px;
+  font-size: 15px;
+  color: var(--text-light-muted);
+}
+
+.status {
+  color: var(--text-light-muted);
+}
+
+.grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: clamp(16px, 2.5vw, 22px);
+}
+
+.errorBox {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 16px;
+  max-width: 420px;
+  padding: 24px;
+  border: 1px solid rgba(240, 138, 138, 0.4);
+  border-radius: 12px;
+  background: rgba(240, 138, 138, 0.08);
+}
+
+.errorText {
+  margin: 0;
+  color: var(--text-light);
+}

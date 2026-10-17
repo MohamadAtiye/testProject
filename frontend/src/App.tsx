@@ -42,7 +42,7 @@ export default function App() {
           <Route path="/consulting" element={<Consulting />} />
           <Route path="/impressum" element={<Impressum />} />
           <Route path="/datenschutz" element={<Datenschutz />} />
-          <Route path="/admin" element={<Admin />} />
+          <Route path="/admin/*" element={<Admin />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </main>

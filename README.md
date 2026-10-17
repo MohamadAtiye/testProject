@@ -42,6 +42,26 @@ Endpoints are served from `backend/api/`, e.g.:
 - `POST /api/project/submit.php`  — receive a "Projekt starten" request (→ `backend/api/projects.json`)
 - `GET  /api/health.php`          — health check
 
+Admin (session-protected):
+
+- `POST /api/admin/login.php`     — sign in (credentials from `backend/.env`)
+- `POST /api/admin/logout.php`    — sign out
+- `GET  /api/admin/me.php`        — current session
+- `GET  /api/admin/stats.php`     — today/this-week counts for contact + project requests
+- `GET  /api/admin/records.php?type=contact|project` — all records (newest first)
+
+### Seed data
+
+`backend/api/sample_messages.json` and `backend/api/sample_projects.json` hold
+realistic seed data. Reset the live files from them with:
+
+```bash
+backend\reset-data.bat
+```
+
+The `createdAt` values are shifted on reset so the newest record becomes "now" —
+keeping the dashboard's today/this-week counts meaningful.
+
 ### ML layer (local, not exposed)
 
 A local `llama.cpp` server loads the GGUF model and listens on `127.0.0.1` only —
