@@ -3,6 +3,7 @@ import Container from "../components/Container";
 import Logo from "../components/Logo";
 import Icon from "../components/Icon";
 import { navLinks } from "../data/navigation";
+import { contact } from "../data/contact";
 import styles from "./Footer.module.css";
 
 const year = new Date().getFullYear();
@@ -35,20 +36,20 @@ export default function Footer() {
           <h2 className={styles.colTitle}>Kontakt</h2>
           <ul className={styles.list}>
             <li>
-              <a href="mailto:hallo@stadtloewe.de" className={styles.link}>
+              <a href={`mailto:${contact.email}`} className={styles.link}>
                 <Icon name="mail" size={18} />
-                hallo@stadtloewe.de
+                {contact.email}
               </a>
             </li>
             <li>
-              <a href="tel:+49000000000" className={styles.link}>
+              <a href={`tel:${contact.phoneHref}`} className={styles.link}>
                 <Icon name="phone" size={18} />
-                +49 000 000 000
+                {contact.phone}
               </a>
             </li>
             <li className={styles.address}>
               <Icon name="mapPin" size={18} />
-              Musterstraße 1, 12345 Stadt
+              {contact.addressLine}
             </li>
           </ul>
         </div>

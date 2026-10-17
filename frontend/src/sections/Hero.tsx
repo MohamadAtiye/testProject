@@ -27,7 +27,7 @@ export default function Hero() {
           Beratung zu digitalen Lösungen, die wirken.
         </p>
         <div className={styles.actions}>
-          <Button to="/kontakt" variant="primary" size="lg" withArrow>
+          <Button to="/projekt-starten" variant="primary" size="lg" withArrow>
             Projekt starten
           </Button>
           <Button to="/#leistungen" variant="ghost" size="lg">

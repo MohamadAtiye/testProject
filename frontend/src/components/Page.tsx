@@ -5,7 +5,7 @@ import styles from "./Page.module.css";
 type PageProps = {
   title: string;
   eyebrow?: string;
-  children: ReactNode;
+  children?: ReactNode;
 };
 
 export default function Page({ title, eyebrow, children }: PageProps) {

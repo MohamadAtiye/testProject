@@ -35,7 +35,7 @@ export default function TopNav({ isOpen, onNavigate }: TopNavProps) {
         ))}
       </ul>
       <Button
-        to="/kontakt"
+        to="/projekt-starten"
         variant="primary"
         size="sm"
         withArrow

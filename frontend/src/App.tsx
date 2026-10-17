@@ -5,6 +5,7 @@ import Footer from "./sections/Footer";
 import Home from "./pages/Home";
 import UeberUns from "./pages/UeberUns";
 import Kontakt from "./pages/Kontakt";
+import ProjektStarten from "./pages/ProjektStarten";
 import Projekte from "./pages/Projekte";
 import Design from "./pages/Design";
 import Systems from "./pages/Systems";
@@ -26,6 +27,7 @@ export default function App() {
           <Route path="/" element={<Home />} />
           <Route path="/ueber-uns" element={<UeberUns />} />
           <Route path="/kontakt" element={<Kontakt />} />
+          <Route path="/projekt-starten" element={<ProjektStarten />} />
           <Route path="/projekte" element={<Projekte />} />
           <Route path="/design" element={<Design />} />
           <Route path="/systems" element={<Systems />} />

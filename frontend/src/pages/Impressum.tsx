@@ -1,4 +1,5 @@
 import Page from "../components/Page";
+import { contact } from "../data/contact";
 
 export default function Impressum() {
   return (
@@ -7,12 +8,10 @@ export default function Impressum() {
       <p>
         Stadtlöwe — Design · Systems · Consulting
         <br />
-        Musterstraße 1
-        <br />
-        12345 Stadt
+        {contact.addressLine}
       </p>
       <p>
-        E-Mail: <a href="mailto:hallo@stadtloewe.de">hallo@stadtloewe.de</a>
+        E-Mail: <a href={`mailto:${contact.email}`}>{contact.email}</a>
       </p>
     </Page>
   );
