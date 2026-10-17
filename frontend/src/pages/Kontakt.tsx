@@ -6,12 +6,55 @@ import Icon from "../components/Icon";
 import { contact, offices } from "../data/contact";
 import styles from "./Kontakt.module.css";
 
-export default function Kontakt() {
-  const [sent, setSent] = useState(false);
+type Status = "idle" | "loading" | "success" | "error";
 
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+export default function Kontakt() {
+  const [status, setStatus] = useState<Status>("idle");
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+  const [formError, setFormError] = useState("");
+
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    setSent(true);
+    const form = event.currentTarget;
+    const data = new FormData(form);
+
+    const payload = {
+      email: String(data.get("email") ?? ""),
+      phone: String(data.get("phone") ?? ""),
+      title: String(data.get("title") ?? ""),
+      message: String(data.get("message") ?? ""),
+    };
+
+    setStatus("loading");
+    setFieldErrors({});
+    setFormError("");
+
+    try {
+      const response = await fetch("/api/contact.php", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      const result = (await response.json().catch(() => null)) as
+        | { ok?: boolean; error?: string; errors?: Record<string, string> }
+        | null;
+
+      if (!response.ok || !result?.ok) {
+        setFieldErrors(result?.errors ?? {});
+        setFormError(
+          result?.error ?? "Senden fehlgeschlagen. Bitte versuche es erneut.",
+        );
+        setStatus("error");
+        return;
+      }
+
+      form.reset();
+      setStatus("success");
+    } catch {
+      setFormError("Netzwerkfehler. Bitte versuche es später erneut.");
+      setStatus("error");
+    }
   }
 
   return (
@@ -32,11 +75,21 @@ export default function Kontakt() {
 
       <div className={styles.formBand}>
         <Container className={styles.formInner}>
-          {sent ? (
-            <p className={styles.success} role="status">
-              Vielen Dank! Deine Nachricht wurde übermittelt. Wir melden uns in
-              Kürze bei dir.
-            </p>
+          {status === "success" ? (
+            <div className={styles.successBlock}>
+              <p className={styles.success} role="status">
+                Vielen Dank! Deine Nachricht wurde übermittelt. Wir melden uns
+                in Kürze bei dir.
+              </p>
+              <div className={styles.successActions}>
+                <Button to="/projekte" variant="primary" withArrow>
+                  Unsere Projekte ansehen
+                </Button>
+                <Button variant="ghost" onClick={() => setStatus("idle")}>
+                  Noch eine Nachricht senden
+                </Button>
+              </div>
+            </div>
           ) : (
             <form className={styles.form} onSubmit={handleSubmit}>
               <div className={styles.field}>
@@ -48,9 +101,17 @@ export default function Kontakt() {
                   name="email"
                   type="email"
                   required
-                  className={styles.input}
+                  className={[
+                    styles.input,
+                    fieldErrors.email ? styles.inputError : null,
+                  ]
+                    .filter(Boolean)
+                    .join(" ")}
                   placeholder="name@beispiel.de"
                 />
+                {fieldErrors.email && (
+                  <span className={styles.fieldError}>{fieldErrors.email}</span>
+                )}
               </div>
 
               <div className={styles.field}>
@@ -61,9 +122,17 @@ export default function Kontakt() {
                   id="phone"
                   name="phone"
                   type="tel"
-                  className={styles.input}
+                  className={[
+                    styles.input,
+                    fieldErrors.phone ? styles.inputError : null,
+                  ]
+                    .filter(Boolean)
+                    .join(" ")}
                   placeholder="+49 000 000 000"
                 />
+                {fieldErrors.phone && (
+                  <span className={styles.fieldError}>{fieldErrors.phone}</span>
+                )}
               </div>
 
               <div className={styles.field}>
@@ -75,9 +144,17 @@ export default function Kontakt() {
                   name="title"
                   type="text"
                   required
-                  className={styles.input}
+                  className={[
+                    styles.input,
+                    fieldErrors.title ? styles.inputError : null,
+                  ]
+                    .filter(Boolean)
+                    .join(" ")}
                   placeholder="Worum geht es?"
                 />
+                {fieldErrors.title && (
+                  <span className={styles.fieldError}>{fieldErrors.title}</span>
+                )}
               </div>
 
               <div className={styles.field}>
@@ -89,13 +166,34 @@ export default function Kontakt() {
                   name="message"
                   rows={6}
                   required
-                  className={styles.textarea}
+                  className={[
+                    styles.textarea,
+                    fieldErrors.message ? styles.inputError : null,
+                  ]
+                    .filter(Boolean)
+                    .join(" ")}
                   placeholder="Deine Nachricht an uns …"
                 />
+                {fieldErrors.message && (
+                  <span className={styles.fieldError}>
+                    {fieldErrors.message}
+                  </span>
+                )}
               </div>
 
-              <Button type="submit" variant="primary" withArrow>
-                Nachricht senden
+              {formError && (
+                <p className={styles.formError} role="alert">
+                  {formError}
+                </p>
+              )}
+
+              <Button
+                type="submit"
+                variant="primary"
+                withArrow
+                disabled={status === "loading"}
+              >
+                {status === "loading" ? "Wird gesendet …" : "Nachricht senden"}
               </Button>
             </form>
           )}
@@ -111,17 +209,11 @@ export default function Kontakt() {
           <div className={styles.cardGrid}>
             <div className={styles.card}>
               <span className={styles.cardKicker}>Kontakt</span>
-              <a
-                className={styles.cardRow}
-                href={`mailto:${contact.email}`}
-              >
+              <a className={styles.cardRow} href={`mailto:${contact.email}`}>
                 <Icon name="mail" size={20} className={styles.cardIcon} />
                 <span>{contact.email}</span>
               </a>
-              <a
-                className={styles.cardRow}
-                href={`tel:${contact.phoneHref}`}
-              >
+              <a className={styles.cardRow} href={`tel:${contact.phoneHref}`}>
                 <Icon name="phone" size={20} className={styles.cardIcon} />
                 <span>{contact.phone}</span>
               </a>

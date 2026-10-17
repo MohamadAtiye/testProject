@@ -1,0 +1,4 @@
+# Deny direct access to the JSON message store (Apache).
+<Files "messages.json">
+    Require all denied
+</Files>

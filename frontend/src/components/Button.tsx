@@ -11,6 +11,7 @@ type ButtonProps = {
   to?: string;
   href?: string;
   type?: "button" | "submit" | "reset";
+  disabled?: boolean;
   className?: string;
   onClick?: () => void;
 };
@@ -23,6 +24,7 @@ export default function Button({
   to,
   href,
   type = "button",
+  disabled = false,
   className,
   onClick,
 }: ButtonProps) {
@@ -30,6 +32,7 @@ export default function Button({
     styles.btn,
     styles[variant],
     size !== "md" ? styles[size] : null,
+    disabled ? styles.disabled : null,
     className,
   ]
     .filter(Boolean)
@@ -61,7 +64,12 @@ export default function Button({
   }
 
   return (
-    <button type={type} className={classes} onClick={onClick}>
+    <button
+      type={type}
+      className={classes}
+      onClick={onClick}
+      disabled={disabled}
+    >
       {content}
     </button>
   );
