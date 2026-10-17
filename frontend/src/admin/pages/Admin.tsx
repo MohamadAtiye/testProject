@@ -1,38 +1,75 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { FormEvent } from "react";
 import Button from "../../components/Button";
 import styles from "./Admin.module.css";
 
 const TEST_EMAIL = "admin@mail.com";
 const TEST_PASSWORD = "testPass123";
-const STORAGE_KEY = "stadtloewe.admin";
 
 export default function Admin() {
-  const [authed, setAuthed] = useState(
-    () => localStorage.getItem(STORAGE_KEY) === "1",
-  );
+  const [checked, setChecked] = useState(false);
+  const [authed, setAuthed] = useState(false);
   const [email, setEmail] = useState(TEST_EMAIL);
   const [password, setPassword] = useState(TEST_PASSWORD);
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  function handleLogin(event: FormEvent<HTMLFormElement>) {
+  useEffect(() => {
+    fetch("/api/admin/me.php", { credentials: "same-origin" })
+      .then((response) => setAuthed(response.ok))
+      .catch(() => setAuthed(false))
+      .finally(() => setChecked(true));
+  }, []);
+
+  async function handleLogin(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (
-      email.trim().toLowerCase() === TEST_EMAIL &&
-      password === TEST_PASSWORD
-    ) {
-      localStorage.setItem(STORAGE_KEY, "1");
-      setError("");
+    setLoading(true);
+    setError("");
+
+    try {
+      const response = await fetch("/api/admin/login.php", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "same-origin",
+        body: JSON.stringify({ email, password }),
+      });
+
+      const result = (await response.json().catch(() => null)) as
+        | { ok?: boolean; error?: string }
+        | null;
+
+      if (!response.ok || !result?.ok) {
+        setError(result?.error ?? "Ungültige Zugangsdaten.");
+        return;
+      }
+
       setAuthed(true);
-    } else {
-      setError("Ungültige Zugangsdaten.");
+    } catch {
+      setError("Verbindungsfehler. Bitte versuche es erneut.");
+    } finally {
+      setLoading(false);
     }
   }
 
-  function logout() {
-    localStorage.removeItem(STORAGE_KEY);
+  async function logout() {
+    try {
+      await fetch("/api/admin/logout.php", {
+        method: "POST",
+        credentials: "same-origin",
+      });
+    } catch {
+      // ignore - we clear the UI state regardless
+    }
     setPassword(TEST_PASSWORD);
     setAuthed(false);
+  }
+
+  if (!checked) {
+    return (
+      <div className={styles.loginWrap}>
+        <p className={styles.loading}>Laden …</p>
+      </div>
+    );
   }
 
   if (!authed) {
@@ -79,8 +116,8 @@ export default function Admin() {
             </p>
           )}
 
-          <Button type="submit" variant="primary">
-            Anmelden
+          <Button type="submit" variant="primary" disabled={loading}>
+            {loading ? "Anmelden …" : "Anmelden"}
           </Button>
 
           <p className={styles.hint}>

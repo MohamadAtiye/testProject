@@ -28,6 +28,10 @@
   color: var(--gold);
 }
 
+.loading {
+  color: var(--text-light-muted);
+}
+
 .loginTitle {
   font-size: 26px;
   color: var(--white);
