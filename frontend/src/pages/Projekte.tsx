@@ -7,7 +7,7 @@ export default function Projekte() {
     <div className={styles.page}>
       <Container>
         <header className={styles.header}>
-          <span className={styles.eyebrow}>Portfolio</span>
+          <span className={styles.eyebrow}>Projekte</span>
           <h1 className={styles.title}>Ausgewählte Projekte</h1>
           <p className={styles.intro}>
             Marken, Websites und Systeme, die wir von der Idee bis zur Umsetzung

@@ -1,4 +1,4 @@
-import { Link } from "react-router";
+import { NavLink } from "react-router";
 import { navLinks } from "../data/navigation";
 import Button from "./Button";
 import styles from "./TopNav.module.css";
@@ -20,9 +20,17 @@ export default function TopNav({ isOpen, onNavigate }: TopNavProps) {
       <ul className={styles.links}>
         {navLinks.map((link) => (
           <li key={link.label}>
-            <Link to={link.to} className={styles.link} onClick={onNavigate}>
+            <NavLink
+              to={link.to}
+              className={({ isActive }) =>
+                [styles.link, isActive ? styles.active : null]
+                  .filter(Boolean)
+                  .join(" ")
+              }
+              onClick={onNavigate}
+            >
               {link.label}
-            </Link>
+            </NavLink>
           </li>
         ))}
       </ul>

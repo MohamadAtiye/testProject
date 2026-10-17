@@ -14,6 +14,7 @@
 }
 
 .link {
+  position: relative;
   display: inline-block;
   font-family: var(--font-heading);
   font-size: 14px;
@@ -24,8 +25,28 @@
   transition: color 0.2s var(--ease);
 }
 
+.link::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -6px;
+  height: 2px;
+  border-radius: 2px;
+  background: var(--gold);
+  box-shadow: 0 0 8px rgba(212, 175, 124, 0.5);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.28s var(--ease);
+}
+
 .link:hover {
   color: var(--gold);
+}
+
+.link:hover::after,
+.active::after {
+  transform: scaleX(1);
 }
 
 .cta {
@@ -63,6 +84,12 @@
     padding: 16px 4px;
     font-size: 16px;
     border-bottom: 1px solid var(--border-dark);
+  }
+
+  .link::after {
+    left: 4px;
+    right: 4px;
+    bottom: -1px;
   }
 
   .cta {
