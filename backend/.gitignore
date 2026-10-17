@@ -1,0 +1,3 @@
+# Local model + bundled runtime (large, not for version control)
+ml/
+tools/

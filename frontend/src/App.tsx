@@ -1,4 +1,4 @@
-import { Route, Routes } from "react-router";
+import { Route, Routes, useLocation } from "react-router";
 import ScrollToHash from "./components/ScrollToHash";
 import Header from "./sections/Header";
 import Footer from "./sections/Footer";
@@ -12,16 +12,24 @@ import Systems from "./pages/Systems";
 import Consulting from "./pages/Consulting";
 import Impressum from "./pages/Impressum";
 import Datenschutz from "./pages/Datenschutz";
+import Admin from "./admin/pages/Admin";
 import NotFound from "./pages/NotFound";
 
 export default function App() {
+  const { pathname } = useLocation();
+  const isAdmin = pathname.startsWith("/admin");
+
   return (
     <>
-      <a className="skip-link" href="#main">
-        Zum Inhalt springen
-      </a>
-      <ScrollToHash />
-      <Header />
+      {!isAdmin && (
+        <>
+          <a className="skip-link" href="#main">
+            Zum Inhalt springen
+          </a>
+          <ScrollToHash />
+          <Header />
+        </>
+      )}
       <main id="main">
         <Routes>
           <Route path="/" element={<Home />} />
@@ -34,10 +42,11 @@ export default function App() {
           <Route path="/consulting" element={<Consulting />} />
           <Route path="/impressum" element={<Impressum />} />
           <Route path="/datenschutz" element={<Datenschutz />} />
+          <Route path="/admin" element={<Admin />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </main>
-      <Footer />
+      {!isAdmin && <Footer />}
     </>
   );
 }
