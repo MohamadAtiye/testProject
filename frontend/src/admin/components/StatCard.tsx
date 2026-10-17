@@ -19,22 +19,24 @@ export default function StatCard({ title, icon, bucket, to }: StatCardProps) {
         <h2 className={styles.title}>{title}</h2>
       </div>
 
-      <div className={styles.metric}>
-        <span className={styles.value}>{bucket.today}</span>
-        <span className={styles.label}>Heute</span>
+      <div className={styles.body}>
+        <div className={styles.metrics}>
+          <div className={styles.metric}>
+            <span className={styles.value}>{bucket.today}</span>
+            <span className={styles.label}>Heute</span>
+          </div>
+
+          <div className={styles.metric}>
+            <span className={styles.valueWeek}>{bucket.week}</span>
+            <span className={styles.label}>Diese Woche</span>
+          </div>
+        </div>
+
+        <Link className={styles.viewAll} to={to}>
+          <span>Alle ansehen</span>
+          <Icon name="arrowRight" size={16} className={styles.arrow} />
+        </Link>
       </div>
-
-      <div className={styles.metric}>
-        <span className={styles.valueWeek}>{bucket.week}</span>
-        <span className={styles.label}>Diese Woche</span>
-      </div>
-
-      <div className={styles.foot}>Gesamt {bucket.total}</div>
-
-      <Link className={styles.viewAll} to={to}>
-        <span>Alle ansehen</span>
-        <Icon name="arrowRight" size={16} className={styles.arrow} />
-      </Link>
     </section>
   );
 }

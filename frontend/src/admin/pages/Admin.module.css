@@ -11,6 +11,7 @@
 }
 
 .panel {
+  --admin-max: 1160px;
   display: flex;
   flex-direction: column;
   min-height: 100svh;
@@ -22,14 +23,20 @@
   position: sticky;
   top: 0;
   z-index: 10;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
   padding: 14px var(--container-pad);
   border-bottom: 1px solid var(--border-dark);
   background: rgba(11, 22, 34, 0.96);
   backdrop-filter: blur(8px);
+}
+
+.topbarInner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  width: 100%;
+  max-width: var(--admin-max);
+  margin-inline: auto;
 }
 
 .brand {
@@ -44,7 +51,7 @@
 
 .content {
   width: 100%;
-  max-width: var(--container-max);
+  max-width: var(--admin-max);
   margin-inline: auto;
-  padding: clamp(24px, 5vw, 48px) var(--container-pad);
+  padding: clamp(24px, 4vw, 40px) var(--container-pad);
 }

@@ -1,0 +1,148 @@
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 100%;
+  height: 520px;
+  padding: clamp(18px, 3vw, 24px);
+  border: 1px solid var(--border-dark);
+  border-radius: 14px;
+  background: var(--surface-dark-alt);
+}
+
+.head {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--border-dark);
+}
+
+.title {
+  font-family: var(--font-heading);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--gold);
+}
+
+.hint {
+  font-size: 13px;
+  color: var(--text-light-muted);
+}
+
+.thread {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 4px 2px;
+}
+
+.empty {
+  margin: auto;
+  font-size: 14px;
+  color: var(--text-light-muted);
+  text-align: center;
+}
+
+.rowUser,
+.rowBot {
+  display: flex;
+}
+
+.rowUser {
+  justify-content: flex-end;
+}
+
+.rowBot {
+  justify-content: flex-start;
+}
+
+.bubbleUser,
+.bubbleBot {
+  max-width: 82%;
+  padding: 10px 14px;
+  border-radius: 12px;
+  font-size: 14px;
+  line-height: 1.6;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.bubbleUser {
+  background: var(--gold);
+  color: var(--navy);
+  border-bottom-right-radius: 4px;
+}
+
+.bubbleBot {
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--text-light);
+  border: 1px solid var(--border-dark);
+  border-bottom-left-radius: 4px;
+}
+
+.typing {
+  color: var(--text-light-muted);
+  font-style: italic;
+}
+
+.error {
+  flex: 0 0 auto;
+  margin: 0;
+  padding: 10px 14px;
+  border: 1px solid rgba(240, 138, 138, 0.4);
+  border-radius: 10px;
+  background: rgba(240, 138, 138, 0.08);
+  font-size: 14px;
+  color: #f0a2a2;
+}
+
+.composer {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: flex-end;
+  gap: 12px;
+}
+
+.input {
+  flex: 1 1 auto;
+  min-width: 0;
+  padding: 12px 14px;
+  background: var(--surface-dark);
+  border: 1px solid var(--border-dark);
+  border-radius: 10px;
+  color: var(--white);
+  font-size: 15px;
+  line-height: 1.5;
+  resize: none;
+  transition: border-color 0.2s var(--ease);
+}
+
+.input:focus {
+  border-color: var(--gold);
+}
+
+.input::placeholder {
+  color: var(--text-light-muted);
+}
+
+@media (max-width: 640px) {
+  .card {
+    height: min(72vh, 520px);
+  }
+}
+
+@media (max-width: 560px) {
+  .composer {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}

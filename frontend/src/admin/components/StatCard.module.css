@@ -1,10 +1,9 @@
 .card {
   display: flex;
   flex-direction: column;
-  gap: 14px;
-  width: 100%;
-  max-width: 250px;
-  padding: 18px 20px;
+  gap: 16px;
+  min-width: 0;
+  padding: clamp(18px, 2.5vw, 24px);
   border: 1px solid var(--border-dark);
   border-radius: 14px;
   background: var(--surface-dark-alt);
@@ -19,7 +18,7 @@
   display: flex;
   align-items: center;
   gap: 9px;
-  padding-bottom: 12px;
+  padding-bottom: 14px;
   border-bottom: 1px solid var(--border-dark);
 }
 
@@ -37,6 +36,20 @@
   color: var(--text-light);
 }
 
+.body {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.metrics {
+  display: flex;
+  flex-wrap: wrap;
+  gap: clamp(24px, 4vw, 48px);
+}
+
 .metric {
   display: flex;
   align-items: baseline;
@@ -45,7 +58,7 @@
 
 .value {
   font-family: var(--font-heading);
-  font-size: 32px;
+  font-size: clamp(28px, 3.5vw, 34px);
   font-weight: 600;
   line-height: 1;
   color: var(--white);
@@ -53,7 +66,7 @@
 
 .valueWeek {
   font-family: var(--font-heading);
-  font-size: 22px;
+  font-size: clamp(22px, 2.8vw, 26px);
   font-weight: 600;
   line-height: 1;
   color: var(--text-light);
@@ -68,21 +81,10 @@
   color: var(--text-light-muted);
 }
 
-.foot {
-  padding-top: 12px;
-  border-top: 1px solid var(--border-dark);
-  font-size: 12px;
-  color: var(--text-light-muted);
-}
-
 .viewAll {
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-  padding: 10px 12px;
-  border: 1px solid var(--border-dark);
-  border-radius: 10px;
+  gap: 6px;
   font-family: var(--font-heading);
   font-size: 11px;
   font-weight: 600;
@@ -90,16 +92,12 @@
   text-transform: uppercase;
   color: var(--text-light);
   text-decoration: none;
-  transition:
-    border-color 0.2s var(--ease),
-    color 0.2s var(--ease),
-    background-color 0.2s var(--ease);
+  white-space: nowrap;
+  transition: color 0.2s var(--ease);
 }
 
 .viewAll:hover {
-  border-color: var(--gold);
   color: var(--gold);
-  background: rgba(212, 175, 124, 0.06);
 }
 
 .arrow {

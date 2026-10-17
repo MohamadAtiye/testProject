@@ -49,6 +49,7 @@ Admin (session-protected):
 - `GET  /api/admin/me.php`        — current session
 - `GET  /api/admin/stats.php`     — today/this-week counts for contact + project requests
 - `GET  /api/admin/records.php?type=contact|project` — all records (newest first)
+- `POST /api/admin/chat.php`      — chat with the local model (admin dashboard)
 
 ### Seed data
 
@@ -75,6 +76,20 @@ run-model.bat    # -> llama-server on http://127.0.0.1:8080 (--no-webui)
 - On first run, `setup-model.ps1` automatically downloads the llama.cpp runtime into `backend/tools/`.
 - Put one or more `.gguf` files in `backend/ml/`; the first one is loaded.
 - Override with env vars: `AI_MODEL_PATH` (model file) and `AI_PORT` (default `8080`).
+
+The PHP backend talks to the model via `AI_BASE_URL` / `AI_MODEL` / `AI_TIMEOUT` in `backend/.env`.
+The model is only reachable on `127.0.0.1` and is used for the admin chat (and, later, request analysis).
+
+### Prompts
+
+System prompts live in `backend/prompts/*.md` and are composed by `src/prompts.php`:
+
+- `persona.md` — identity, tone and language
+- `domain.md` — what Stadtlöwe does and how to read the stored contact/project requests
+
+Which modules are included is set by `AI_PROMPTS` (comma-separated file names, no `.md`) in
+`backend/.env`, default `persona,domain`. Add a new `.md` file and list it there to extend the
+assistant's instructions.
 
 ## Typical development session
 

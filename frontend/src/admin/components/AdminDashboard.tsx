@@ -3,6 +3,7 @@ import Button from "../../components/Button";
 import { fetchStats } from "../api";
 import type { Stats, StatsResult } from "../api";
 import StatCard from "./StatCard";
+import AdminChat from "./AdminChat";
 import styles from "./AdminDashboard.module.css";
 
 type AdminDashboardProps = {
@@ -94,6 +95,8 @@ export default function AdminDashboard({
           />
         </div>
       ) : null}
+
+      <AdminChat onLogout={onLogout} />
     </div>
   );
 }

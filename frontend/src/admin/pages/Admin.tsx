@@ -64,12 +64,14 @@ export default function Admin() {
   return (
     <div className={styles.panel}>
       <header className={styles.topbar}>
-        <Link to="/admin" className={styles.brand}>
-          Stadtlöwe Admin
-        </Link>
-        <Button variant="ghost" size="sm" onClick={handleLogout}>
-          Abmelden
-        </Button>
+        <div className={styles.topbarInner}>
+          <Link to="/admin" className={styles.brand}>
+            Stadtlöwe Admin
+          </Link>
+          <Button variant="ghost" size="sm" onClick={handleLogout}>
+            Abmelden
+          </Button>
+        </div>
       </header>
 
       <div className={styles.content}>{view}</div>

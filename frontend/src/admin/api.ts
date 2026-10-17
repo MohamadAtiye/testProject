@@ -42,6 +42,12 @@ export type RecordsResult =
   | { ok: true; records: AdminRecord[] }
   | { ok: false; status: number };
 
+export type ChatMessage = { role: "user" | "assistant"; content: string };
+
+export type ChatResult =
+  | { ok: true; reply: string }
+  | { ok: false; status: number; error: string };
+
 export async function fetchSession(): Promise<string | null> {
   try {
     const response = await fetch("/api/admin/me.php", {
@@ -131,5 +137,32 @@ export async function fetchRecords(type: RecordType): Promise<RecordsResult> {
     return { ok: true, records: data.records };
   } catch {
     return { ok: false, status: 0 };
+  }
+}
+
+export async function sendChat(messages: ChatMessage[]): Promise<ChatResult> {
+  try {
+    const response = await fetch("/api/admin/chat.php", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "same-origin",
+      body: JSON.stringify({ messages }),
+    });
+
+    const data = (await response.json().catch(() => null)) as
+      | { ok?: boolean; reply?: string; error?: string }
+      | null;
+
+    if (!response.ok || !data?.ok || typeof data.reply !== "string") {
+      return {
+        ok: false,
+        status: response.status,
+        error: data?.error ?? "Antwort fehlgeschlagen.",
+      };
+    }
+
+    return { ok: true, reply: data.reply };
+  } catch {
+    return { ok: false, status: 0, error: "Modell nicht erreichbar." };
   }
 }
