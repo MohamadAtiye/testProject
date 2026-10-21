@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useState } from "react";
-import { Link } from "react-router";
 import Button from "../../components/Button";
 import { fetchRecords } from "../api";
 import type {
@@ -9,6 +8,7 @@ import type {
   RecordsResult,
   RecordType,
 } from "../api";
+import AdminPageHeader from "../components/AdminPageHeader";
 import DataTable from "../components/DataTable";
 import type { Column } from "../components/DataTable";
 import ExpandableText from "../components/ExpandableText";
@@ -177,20 +177,21 @@ export default function AdminRecords({ type, onLogout }: AdminRecordsProps) {
 
   return (
     <div className={styles.page}>
-      <div className={styles.head}>
-        <div>
-          <Link to="/admin" className={styles.back}>
-            ← Dashboard
-          </Link>
-          <h1 className={styles.title}>{labels[type]}</h1>
-          {records && (
-            <p className={styles.count}>{records.length} Einträge</p>
-          )}
-        </div>
-        <Button variant="ghost" size="sm" onClick={refresh} disabled={loading}>
-          Aktualisieren
-        </Button>
-      </div>
+      <AdminPageHeader
+        title={labels[type]}
+        subtitle={records ? `${records.length} Einträge` : "Wird geladen …"}
+        showBack
+        actions={
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={refresh}
+            disabled={loading}
+          >
+            Aktualisieren
+          </Button>
+        }
+      />
 
       {loading && !records ? (
         <p className={styles.status}>Laden …</p>

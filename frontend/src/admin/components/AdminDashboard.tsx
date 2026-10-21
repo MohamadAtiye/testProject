@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import Button from "../../components/Button";
 import { fetchStats } from "../api";
 import type { Stats, StatsResult } from "../api";
+import AdminPageHeader from "./AdminPageHeader";
 import StatCard from "./StatCard";
 import AdminChat from "./AdminChat";
 import styles from "./AdminDashboard.module.css";
@@ -60,15 +61,20 @@ export default function AdminDashboard({
 
   return (
     <div className={styles.page}>
-      <div className={styles.head}>
-        <div>
-          <h1 className={styles.title}>Dashboard</h1>
-          <p className={styles.subtitle}>Angemeldet als {email}</p>
-        </div>
-        <Button variant="ghost" size="sm" onClick={refresh} disabled={loading}>
-          Aktualisieren
-        </Button>
-      </div>
+      <AdminPageHeader
+        title="Dashboard"
+        subtitle={`Angemeldet als ${email}`}
+        actions={
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={refresh}
+            disabled={loading}
+          >
+            Aktualisieren
+          </Button>
+        }
+      />
 
       {loading && !stats ? (
         <p className={styles.status}>Laden …</p>

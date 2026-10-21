@@ -1,0 +1,78 @@
+.head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.titles {
+  min-width: 0;
+}
+
+.title {
+  font-size: clamp(20px, 2.6vw, 26px);
+  line-height: 1.15;
+  color: var(--white);
+}
+
+.subtitle {
+  margin-top: 4px;
+  font-size: 14px;
+  color: var(--text-light-muted);
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-left: auto;
+}
+
+/* Keep the back-button slot reserved on the main dashboard so the refresh
+   action stays in the same position across admin pages. */
+.backSlot {
+  display: flex;
+  justify-content: flex-end;
+  min-width: 190px;
+}
+
+.back {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 11px;
+  border: 1px solid var(--border-dark);
+  border-radius: 8px;
+  font-size: 12px;
+  color: var(--text-light-muted);
+  text-decoration: none;
+  white-space: nowrap;
+  transition:
+    border-color 0.2s var(--ease),
+    color 0.2s var(--ease);
+}
+
+.back:hover {
+  border-color: rgba(212, 175, 124, 0.45);
+  color: var(--gold);
+}
+
+.back:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 2px;
+}
+
+@media (max-width: 720px) {
+  .actions {
+    width: 100%;
+    margin-left: 0;
+    justify-content: space-between;
+  }
+
+  .backSlot {
+    min-width: 0;
+    flex: 1;
+    justify-content: flex-start;
+  }
+}

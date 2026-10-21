@@ -39,6 +39,12 @@ const pathIcons = {
       <path d="M13 6l6 6-6 6" />
     </>
   ),
+  arrowLeft: (
+    <>
+      <path d="M20 12H5" />
+      <path d="M11 18l-6-6 6-6" />
+    </>
+  ),
   arrowUpRight: (
     <>
       <path d="M7 17L17 7" />

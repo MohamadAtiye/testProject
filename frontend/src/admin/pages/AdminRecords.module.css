@@ -4,37 +4,6 @@
   gap: clamp(20px, 3vw, 32px);
 }
 
-.head {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 20px;
-  flex-wrap: wrap;
-}
-
-.back {
-  display: inline-block;
-  margin-bottom: 10px;
-  font-size: 13px;
-  color: var(--text-light-muted);
-  text-decoration: none;
-  transition: color 0.2s var(--ease);
-}
-
-.back:hover {
-  color: var(--gold);
-}
-
-.title {
-  font-size: clamp(24px, 4vw, 34px);
-  color: var(--white);
-}
-
-.count {
-  margin-top: 6px;
-  font-size: 14px;
-  color: var(--text-light-muted);
-}
 
 .status {
   color: var(--text-light-muted);
