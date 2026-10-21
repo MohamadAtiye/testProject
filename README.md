@@ -64,7 +64,8 @@ trusted Origin/Referer.
 
 `/api/v1/admin/chat/stream` streams SSE events (`tool`, `token`, `done`,
 `error`). Tool decisions are resolved non-streaming; the final answer is
-streamed.
+streamed. Admins can create, switch between and delete persisted chat
+conversations through `/api/v1/admin/chat/conversations`.
 
 See [docs/backend.md](./docs/backend.md) for the full endpoint table and
 [docs/frontend.md](./docs/frontend.md) for the client integration.

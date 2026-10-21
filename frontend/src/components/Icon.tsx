@@ -12,6 +12,8 @@ import {
   Gem,
   Cpu,
   Folder,
+  Plus,
+  Trash2,
 } from "lucide-react";
 
 const lucideIcons = {
@@ -26,6 +28,8 @@ const lucideIcons = {
   diamond: Gem,
   chip: Cpu,
   folder: Folder,
+  plus: Plus,
+  trash: Trash2,
 } satisfies Record<string, LucideIcon>;
 
 const pathIcons = {

@@ -50,6 +50,7 @@ backend/
       pool.ts              mysql2 pool + health + close
       records.ts           create/list/count queries
       admins.ts            admin lookup/upsert
+      chat.ts              chat conversations + messages
     ml/
       client.ts            typed ML service client
       types.ts             ML message/tool contracts
@@ -83,6 +84,10 @@ backend/
 | GET | `/api/v1/admin/me` | cookie/Bearer | Current admin |
 | GET | `/api/v1/admin/stats` | cookie/Bearer | Dashboard counts |
 | GET | `/api/v1/admin/records` | cookie/Bearer | Contacts/projects |
+| GET | `/api/v1/admin/chat/conversations` | cookie/Bearer | List chats |
+| POST | `/api/v1/admin/chat/conversations` | cookie/origin | Start a chat |
+| GET | `/api/v1/admin/chat/conversations/:id/messages` | cookie/Bearer | Load one chat |
+| DELETE | `/api/v1/admin/chat/conversations/:id` | cookie/origin | Delete a chat |
 | POST | `/api/v1/admin/chat` | cookie/Bearer | Non-streaming AI chat |
 | POST | `/api/v1/admin/chat/stream` | cookie/Bearer | SSE AI chat |
 
@@ -111,8 +116,8 @@ Zod schemas are the source of truth:
 - `ProjectDraftSchema` — lenient assist draft; unknown fields such as contact
   data are stripped.
 - `ContactMessageSchema`, `ContactRecordSchema`.
-- `RecordsQuerySchema`, `StatsResponseSchema`, `ChatRequestSchema`,
-  `LoginSchema`.
+- `RecordsQuerySchema`, `StatsResponseSchema`, `ChatRequestSchema`
+  (`conversationId` + up to 20 messages), `LoginSchema`.
 
 Validation failures return `422` with field paths:
 
@@ -142,6 +147,8 @@ Migrations run at container startup:
 - `contacts` — email, phone, title, message, IP, UTC timestamp.
 - `projects` — service, engagement, goal, timeline, budget, contact, consent,
   status, IP, UTC timestamp.
+- `chat_conversations` — id, admin email, title, timestamps.
+- `chat_messages` — role, content, UTC timestamp, cascade on conversation delete.
 - `schema_migrations` — applied migrations.
 
 `seeds/demo.sql` is inserted only when `SEED_DEMO=1` and the contact/project
@@ -187,6 +194,20 @@ Streaming:
 
 This avoids unreliable streaming tool-call JSON from small local models while
 still streaming the final answer token by token.
+
+### Chat conversations
+
+Each admin can have multiple conversations. `GET /chat/conversations` returns
+the list with title, timestamps and message count, newest first.
+`POST /chat/conversations` creates an empty chat. `GET
+/chat/conversations/:id/messages` loads one owned conversation and up to 200
+messages. `DELETE /chat/conversations/:id` removes it and cascades to messages.
+
+Both `/chat` and `/chat/stream` require a `conversationId` and persist the last
+user message and final assistant reply into that conversation. Chat requests
+accept at most 20 messages; the frontend keeps the display history but sends
+only the most recent 20 to the model. Ownership is checked by `admin_email`;
+one admin cannot read or delete another admin's chat.
 
 ## Configuration
 
@@ -242,5 +263,7 @@ escaping, unknown tool rejection.
 - Rate limiting is in-process; multiple replicas need Redis or a DB limiter.
 - Tool decisions are non-streaming; the final answer is streamed.
 - No refresh-token rotation yet.
+- Chat history has no automatic retention policy and each conversation is
+  capped at 200 returned messages; there is no search/pagination yet.
 - No project status update endpoint or audit trail yet.
 - No PII retention/deletion workflow yet.

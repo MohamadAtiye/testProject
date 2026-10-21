@@ -24,13 +24,16 @@ The database is internal-only and has no published host port.
 ## Structure
 
 ```text
-backend/migrations/001_schema.sql   tables and indexes
-backend/seeds/demo.sql              realistic demo records
-backend/src/scripts/migrate.ts      migration runner
-backend/src/scripts/seed.ts         demo seed gate
-backend/src/db/pool.ts              connection pool + health
-backend/src/db/records.ts           contact/project queries
-backend/src/db/admins.ts            admin lookup/upsert
+backend/migrations/001_schema.sql       contacts/projects/admins
+backend/migrations/002_chat_history.sql chat tables
+backend/migrations/003_chat_titles.sql  conversation titles
+backend/seeds/demo.sql                realistic demo records
+backend/src/scripts/migrate.ts        migration runner
+backend/src/scripts/seed.ts           demo seed gate
+backend/src/db/pool.ts                connection pool + health
+backend/src/db/records.ts             contact/project queries
+backend/src/db/admins.ts              admin lookup/upsert
+backend/src/db/chat.ts                chat conversations/messages
 ```
 
 ## Tables
@@ -73,6 +76,30 @@ startup script to create/update the hash.
 | `created_at` | UTC, indexed |
 | indexes | created_at, status, service |
 | checks | service, engagement, timeline enums |
+
+### `chat_conversations`
+
+| Column | Notes |
+|--------|-------|
+| `id` | 16-char random hex |
+| `admin_email` | owner |
+| `title` | first user message snippet, default `Neuer Chat` |
+| `created_at` / `updated_at` | UTC |
+| index | `(admin_email, updated_at)` |
+
+### `chat_messages`
+
+| Column | Notes |
+|--------|-------|
+| `id` | auto increment |
+| `conversation_id` | FK to `chat_conversations` |
+| `role` | `user` or `assistant` |
+| `content` | message text |
+| `created_at` | UTC |
+| cascade | deleting a conversation deletes its messages |
+
+Admins can have multiple conversations. Deleting a conversation cascades to its
+messages. The API returns at most 200 messages per conversation.
 
 ### `schema_migrations`
 
@@ -138,7 +165,9 @@ docker compose up -d
 ## Known trade-offs
 
 - Single MySQL instance; no replica/failover configuration.
-- No retention/deletion workflow for PII yet.
+- Chat history has manual per-conversation deletion only; no automated retention
+  policy or message pagination.
+- No retention/deletion workflow for contact/project PII yet.
 - Project status has no update endpoint yet; “open” means `status = 'new'`.
 - Backups are not automated in this demo setup.
 - In-process rate limiting is not stored in the DB; multiple backend replicas

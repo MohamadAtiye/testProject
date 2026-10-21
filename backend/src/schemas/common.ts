@@ -1,5 +1,9 @@
 import { z } from "zod";
 
+export const OkResponseSchema = z.object({
+  ok: z.literal(true),
+});
+
 export const HealthSchema = z.object({
   ok: z.boolean(),
   status: z.enum(["healthy", "degraded", "unhealthy"]),

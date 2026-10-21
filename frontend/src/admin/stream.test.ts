@@ -32,7 +32,8 @@ describe("sendChatStream", () => {
     const tokens: string[] = [];
     const result = await sendChatStream(
       [{ role: "user", content: "hi" }],
-      (token) => tokens.push(token),
+      "conversation-1",
+      (token: string) => tokens.push(token),
     );
 
     expect(tokens).toEqual(["Hal", "lo"]);
@@ -49,6 +50,7 @@ describe("sendChatStream", () => {
 
     const result = await sendChatStream(
       [{ role: "user", content: "hi" }],
+      "conversation-1",
       () => undefined,
     );
 
@@ -69,6 +71,7 @@ describe("sendChatStream", () => {
 
     const result = await sendChatStream(
       [{ role: "user", content: "hi" }],
+      "conversation-1",
       () => undefined,
     );
 

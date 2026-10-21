@@ -33,6 +33,132 @@ export type ChatResult =
   | { ok: true; reply: string }
   | { ok: false; status: number; error: string };
 
+type ConversationsResponse =
+  paths["/api/v1/admin/chat/conversations"]["get"]["responses"][200]["content"]["application/json"];
+
+export type ChatConversation = ConversationsResponse["conversations"][number];
+
+export type ConversationsResult =
+  | { ok: true; conversations: ChatConversation[] }
+  | { ok: false; status: number; error: string };
+
+export async function fetchConversations(): Promise<ConversationsResult> {
+  try {
+    const { data, response } = await api.GET("/api/v1/admin/chat/conversations");
+
+    if (!response.ok || !data) {
+      return {
+        ok: false,
+        status: response.status,
+        error: "Chats konnten nicht geladen werden.",
+      };
+    }
+
+    return { ok: true, conversations: data.conversations };
+  } catch {
+    return {
+      ok: false,
+      status: 0,
+      error: "Chats konnten nicht geladen werden.",
+    };
+  }
+}
+
+type ConversationMessagesResponse =
+  paths["/api/v1/admin/chat/conversations/{id}/messages"]["get"]["responses"][200]["content"]["application/json"];
+
+export type ChatHistoryMessage = ConversationMessagesResponse["messages"][number];
+
+export type ConversationMessagesResult =
+  | {
+      ok: true;
+      conversation: ChatConversation;
+      messages: ChatHistoryMessage[];
+    }
+  | { ok: false; status: number; error: string };
+
+export async function fetchConversationMessages(
+  id: string,
+): Promise<ConversationMessagesResult> {
+  try {
+    const { data, response } = await api.GET(
+      "/api/v1/admin/chat/conversations/{id}/messages",
+      { params: { path: { id } } },
+    );
+
+    if (!response.ok || !data) {
+      return {
+        ok: false,
+        status: response.status,
+        error: "Chat konnte nicht geladen werden.",
+      };
+    }
+
+    return {
+      ok: true,
+      conversation: data.conversation,
+      messages: data.messages,
+    };
+  } catch {
+    return {
+      ok: false,
+      status: 0,
+      error: "Chat konnte nicht geladen werden.",
+    };
+  }
+}
+
+export async function createConversation(): Promise<
+  | { ok: true; conversation: ChatConversation }
+  | { ok: false; status: number; error: string }
+> {
+  try {
+    const { data, response } = await api.POST("/api/v1/admin/chat/conversations");
+
+    if (!response.ok || !data) {
+      return {
+        ok: false,
+        status: response.status,
+        error: "Chat konnte nicht erstellt werden.",
+      };
+    }
+
+    return { ok: true, conversation: data.conversation };
+  } catch {
+    return {
+      ok: false,
+      status: 0,
+      error: "Chat konnte nicht erstellt werden.",
+    };
+  }
+}
+
+export async function deleteConversation(
+  id: string,
+): Promise<{ ok: true } | { ok: false; status: number; error: string }> {
+  try {
+    const { data, response } = await api.DELETE(
+      "/api/v1/admin/chat/conversations/{id}",
+      { params: { path: { id } } },
+    );
+
+    if (!response.ok || !data) {
+      return {
+        ok: false,
+        status: response.status,
+        error: "Chat konnte nicht gelöscht werden.",
+      };
+    }
+
+    return { ok: true };
+  } catch {
+    return {
+      ok: false,
+      status: 0,
+      error: "Chat konnte nicht gelöscht werden.",
+    };
+  }
+}
 export async function fetchSession(): Promise<string | null> {
   try {
     const { data, response } = await api.GET("/api/v1/admin/me");
@@ -122,6 +248,7 @@ type StreamEvent =
 
 export async function sendChatStream(
   messages: ChatMessage[],
+  conversationId: string,
   onToken: (token: string) => void,
   signal?: AbortSignal,
 ): Promise<ChatResult> {
@@ -130,7 +257,7 @@ export async function sendChatStream(
       method: "POST",
       headers: { "Content-Type": "application/json" },
       credentials: "same-origin",
-      body: JSON.stringify({ messages }),
+      body: JSON.stringify({ conversationId, messages }),
       signal,
     });
 

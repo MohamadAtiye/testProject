@@ -36,7 +36,7 @@ frontend/
   src/
     App.tsx                 routes and public/admin shell
     main.tsx                entry, router, error boundary
-    index.css               design tokens and globals
+    index.css               design tokens, font-face, globals
     pages/                  Home, Kontakt, ProjektStarten, admin pages, legal
     sections/               Header, Footer, Hero, Projects, ...
     components/             Button, Icon, Seo, Page, ErrorFallback, ...
@@ -46,9 +46,10 @@ frontend/
       schema.d.ts           generated from backend/openapi.json
       assist.ts             public AI form-assist client
     admin/
-      api.ts                admin client: auth, stats, records, SSE chat
+      api.ts                admin client: auth, stats, records, history, SSE chat
       components/           AdminLogin, AdminDashboard, AdminChat, StatCard
       pages/                Admin shell, AdminRecords
+  public/fonts/             self-hosted Inter and Montserrat variable fonts
   docker/nginx.conf         SPA fallback + /api proxy + security headers
   e2e/smoke.spec.ts         Playwright smoke tests
   Dockerfile
@@ -107,7 +108,23 @@ data: {"type":"done","reply":"…"}
 
 The UI appends tokens live, shows a typing indicator while tools are being
 resolved, and replaces the transient text with the final `done` reply. The
-stream is aborted when the user clears the chat or the component unmounts.
+stream is aborted when the user switches chats or the component unmounts.
+
+### Chat conversations
+
+`AdminChat` keeps a sidebar of the admin's conversations:
+
+- On mount it loads `GET /api/v1/admin/chat/conversations`, selects the newest
+  chat and loads its messages.
+- `Neuer Chat` calls `POST /api/v1/admin/chat/conversations`.
+- Selecting a chat calls `GET /api/v1/admin/chat/conversations/:id/messages`.
+- The trash button calls `DELETE /api/v1/admin/chat/conversations/:id`; if the
+  active chat is deleted, the next chat is selected or the empty state returns.
+- The first user message becomes the conversation title.
+
+The backend persists the last user message and final assistant reply into the
+selected conversation. The UI can display up to 200 messages, but the model
+request is capped to the most recent 20 turns.
 
 ## Configuration
 
@@ -119,9 +136,15 @@ stream is aborted when the user clears the chat or the component unmounts.
 | Sitemap domain | `public/sitemap.xml` |
 | Navigation | `src/data/navigation.ts` |
 | Contact/office data | `src/data/contact.ts` |
+| Self-hosted fonts | `public/fonts/` + `src/index.css` |
+| Font preloads | `index.html` |
 
 The domain in `SITE_URL` and `public/sitemap.xml` is still a placeholder and
 must be updated before deployment.
+
+Fonts are the latin subsets of Inter and Montserrat variable fonts. They are
+self-hosted in `public/fonts/`, preloaded in `index.html`, and use
+`font-display: swap`. OFL license files are included next to the font files.
 
 ## Commands
 
@@ -138,7 +161,7 @@ npm run api:types    # regenerate schema.d.ts from ../backend/openapi.json
 ## Testing
 
 - Unit/component: buttons, links, stat cards, form error association, SEO
-  resolver, API clients and the SSE parser.
+  resolver, API clients, conversation load/create/delete and the SSE parser.
 - Accessibility: axe over the main routes; color contrast must still be checked
   in a real browser.
 - E2E: rendering, navigation, not-found/noindex, admin noindex, robots/sitemap.
@@ -146,8 +169,10 @@ npm run api:types    # regenerate schema.d.ts from ../backend/openapi.json
 ## Known trade-offs
 
 - SPA rendering only; no SSR/prerender yet.
-- Chat history is client-side only.
 - The admin login hint uses the default demo credentials; update it when
   replacing the bootstrap admin.
-- Large hero image and Google Fonts are not optimized yet.
+- The hero image is still a single large JPEG; responsive `srcset` and modern
+  formats are not implemented yet.
+- Fonts are self-hosted, variable and preloaded, but there is no automated
+  Lighthouse/font-performance budget.
 - Internationalization is German-only.

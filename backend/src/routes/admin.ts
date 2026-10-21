@@ -2,15 +2,28 @@ import type { FastifyPluginAsyncZod } from "fastify-type-provider-zod";
 import bcrypt from "bcryptjs";
 import { config } from "../config.js";
 import { findAdminByEmail } from "../db/admins.js";
+import {
+  appendChatMessage,
+  createConversation,
+  deleteConversation,
+  getConversation,
+  listConversationMessages,
+  listConversations,
+} from "../db/chat.js";
 import { findRecords, recordCounts } from "../db/records.js";
 import { verifyAdmin, signAdminToken, setAdminCookie, clearAdminCookie } from "../lib/auth.js";
 import { HttpError } from "../lib/errors.js";
 import { assertCookieRequestOrigin, assertTrustedOrigin } from "../lib/security.js";
 import { nowIso } from "../lib/time.js";
 import { MlError } from "../ml/client.js";
+import { OkResponseSchema } from "../schemas/common.js";
 import {
   ChatRequestSchema,
   ChatResponseSchema,
+  ConversationMessagesResponseSchema,
+  ConversationParamsSchema,
+  ConversationsResponseSchema,
+  CreateConversationResponseSchema,
   LoginResponseSchema,
   LoginSchema,
   MeResponseSchema,
@@ -23,6 +36,11 @@ import {
 import { runAdminChat, streamAdminChat } from "../services/chat.js";
 
 const DUMMY_HASH = "$2b$12$9QWUyJ/XJOfcNdXHBStf0OIq7LGwbnhwuPd2GDyS3HdqNdDRHZtIK";
+
+function lastUserContent(messages: Array<{ role: string; content: string }>): string | null {
+  const last = messages[messages.length - 1];
+  return last?.role === "user" ? last.content : null;
+}
 
 const adminRoutes: FastifyPluginAsyncZod = async (app) => {
   app.post(
@@ -73,7 +91,7 @@ const adminRoutes: FastifyPluginAsyncZod = async (app) => {
         tags: ["admin"],
         summary: "Clear the admin session cookie",
         response: {
-          200: MeResponseSchema.omit({ email: true }),
+          200: OkResponseSchema,
         },
       },
     },
@@ -159,6 +177,98 @@ const adminRoutes: FastifyPluginAsyncZod = async (app) => {
     },
   );
 
+  app.get(
+    "/chat/conversations",
+    {
+      schema: {
+        tags: ["admin"],
+        summary: "List chat conversations",
+        security: [{ bearerAuth: [] }, { cookieAuth: [] }],
+        response: {
+          200: ConversationsResponseSchema,
+        },
+      },
+    },
+    async (request, reply) => {
+      const admin = await verifyAdmin(request);
+      const conversations = await listConversations(admin.email);
+
+      return reply.send({ ok: true, conversations });
+    },
+  );
+
+  app.post(
+    "/chat/conversations",
+    {
+      schema: {
+        tags: ["admin"],
+        summary: "Start a new chat conversation",
+        security: [{ bearerAuth: [] }, { cookieAuth: [] }],
+        response: {
+          201: CreateConversationResponseSchema,
+        },
+      },
+    },
+    async (request, reply) => {
+      const admin = await verifyAdmin(request);
+      assertCookieRequestOrigin(request);
+      const conversation = await createConversation(admin.email);
+
+      return reply.code(201).send({ ok: true, conversation });
+    },
+  );
+
+  app.get(
+    "/chat/conversations/:id/messages",
+    {
+      schema: {
+        tags: ["admin"],
+        summary: "Load one conversation",
+        security: [{ bearerAuth: [] }, { cookieAuth: [] }],
+        params: ConversationParamsSchema,
+        response: {
+          200: ConversationMessagesResponseSchema,
+        },
+      },
+    },
+    async (request, reply) => {
+      const admin = await verifyAdmin(request);
+      const result = await listConversationMessages(admin.email, request.params.id);
+
+      if (!result) {
+        throw new HttpError(404, "Chat nicht gefunden.");
+      }
+
+      return reply.send({ ok: true, ...result });
+    },
+  );
+
+  app.delete(
+    "/chat/conversations/:id",
+    {
+      schema: {
+        tags: ["admin"],
+        summary: "Delete a chat conversation",
+        security: [{ bearerAuth: [] }, { cookieAuth: [] }],
+        params: ConversationParamsSchema,
+        response: {
+          200: OkResponseSchema,
+        },
+      },
+    },
+    async (request, reply) => {
+      const admin = await verifyAdmin(request);
+      assertCookieRequestOrigin(request);
+
+      const deleted = await deleteConversation(admin.email, request.params.id);
+      if (!deleted) {
+        throw new HttpError(404, "Chat nicht gefunden.");
+      }
+
+      return reply.send({ ok: true });
+    },
+  );
+
   app.post(
     "/chat",
     {
@@ -175,8 +285,21 @@ const adminRoutes: FastifyPluginAsyncZod = async (app) => {
       },
     },
     async (request, reply) => {
-      await verifyAdmin(request);
+      const admin = await verifyAdmin(request);
       assertCookieRequestOrigin(request);
+
+      const conversation = await getConversation(
+        admin.email,
+        request.body.conversationId,
+      );
+      if (!conversation) {
+        throw new HttpError(404, "Chat nicht gefunden.");
+      }
+
+      const userContent = lastUserContent(request.body.messages);
+      if (userContent) {
+        await appendChatMessage(admin.email, conversation.id, "user", userContent);
+      }
 
       try {
         const response = await runAdminChat(request.body.messages);
@@ -185,6 +308,7 @@ const adminRoutes: FastifyPluginAsyncZod = async (app) => {
           throw new HttpError(502, "Keine Antwort erhalten.");
         }
 
+        await appendChatMessage(admin.email, conversation.id, "assistant", response);
         return reply.send({ ok: true, reply: response });
       } catch (error) {
         if (error instanceof MlError) {
@@ -210,8 +334,21 @@ const adminRoutes: FastifyPluginAsyncZod = async (app) => {
       },
     },
     async (request, reply) => {
-      await verifyAdmin(request);
+      const admin = await verifyAdmin(request);
       assertCookieRequestOrigin(request);
+
+      const conversation = await getConversation(
+        admin.email,
+        request.body.conversationId,
+      );
+      if (!conversation) {
+        throw new HttpError(404, "Chat nicht gefunden.");
+      }
+
+      const userContent = lastUserContent(request.body.messages);
+      if (userContent) {
+        await appendChatMessage(admin.email, conversation.id, "user", userContent);
+      }
 
       reply.hijack();
 
@@ -233,17 +370,30 @@ const adminRoutes: FastifyPluginAsyncZod = async (app) => {
         }
       };
 
+      let assistantReply = "";
+
       try {
         for await (const event of streamAdminChat(request.body.messages, {
           signal: controller.signal,
           logger: request.log,
         })) {
+          if (event.type === "done") {
+            assistantReply = event.reply;
+          }
           send(event);
         }
       } catch (error) {
         request.log.error({ err: error }, "admin chat stream failed");
         send({ type: "error", error: "Modell derzeit nicht erreichbar." });
       } finally {
+        if (assistantReply !== "") {
+          try {
+            await appendChatMessage(admin.email, conversation.id, "assistant", assistantReply);
+          } catch (error) {
+            request.log.error({ err: error }, "chat history save failed");
+          }
+        }
+
         if (!raw.writableEnded) {
           raw.end();
         }
