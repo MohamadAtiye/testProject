@@ -1,4 +1,0 @@
-# Deny direct access to the JSON data store (Apache).
-<FilesMatch "^(messages|projects|sample_messages|sample_projects)\.json$">
-    Require all denied
-</FilesMatch>

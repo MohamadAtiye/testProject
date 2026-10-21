@@ -1,0 +1,25 @@
+[
+  {
+    "name": "design-project",
+    "draft": {
+      "service": "design",
+      "engagement": "project",
+      "goal": "Wir sind ein Handwerksbetrieb und brauchen eine neue Website mit Projektgalerie und Kontaktformular."
+    }
+  },
+  {
+    "name": "systems-longterm",
+    "draft": {
+      "service": "systems",
+      "engagement": "longterm",
+      "goal": "Wir möchten CRM und Buchhaltung verbinden und wiederkehrende Abläufe automatisieren."
+    }
+  },
+  {
+    "name": "consulting-early",
+    "draft": {
+      "service": "consulting",
+      "goal": "Unsere Marke wirkt uneinheitlich und wir brauchen eine klare Positionierung."
+    }
+  }
+]

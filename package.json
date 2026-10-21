@@ -1,0 +1,9 @@
+{
+  "name": "stadtloewe",
+  "private": true,
+  "scripts": {
+    "api:openapi": "npm --prefix backend run openapi",
+    "api:types": "npm --prefix frontend run api:types",
+    "api:sync": "npm run api:openapi && npm run api:types"
+  }
+}

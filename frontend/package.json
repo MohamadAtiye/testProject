@@ -11,12 +11,14 @@
     "test:watch": "vitest",
     "coverage": "vitest run --coverage",
     "e2e": "playwright test",
+    "api:types": "npx --yes -p openapi-typescript@7.13.0 openapi-typescript ../backend/openapi.json -o src/api/schema.d.ts",
     "preview": "vite preview"
   },
   "dependencies": {
     "@chatscope/chat-ui-kit-react": "^2.1.1",
     "@chatscope/chat-ui-kit-styles": "^1.4.0",
     "lucide-react": "^1.58.0",
+    "openapi-fetch": "^0.17.0",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
     "react-error-boundary": "^6.1.6",

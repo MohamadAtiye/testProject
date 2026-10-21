@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { fetchStats, sendChat } from "./api";
+import { fetchStats } from "./api";
 
 type MockOptions = {
   status?: number;
@@ -25,39 +25,6 @@ afterEach(() => {
   vi.unstubAllGlobals();
 });
 
-describe("sendChat", () => {
-  it("returns the reply on success", async () => {
-    mockFetch({ body: { ok: true, reply: "Hallo" } });
-
-    const result = await sendChat([{ role: "user", content: "hi" }]);
-
-    expect(result).toEqual({ ok: true, reply: "Hallo" });
-  });
-
-  it("surfaces the status and error on failure", async () => {
-    mockFetch({ status: 401, body: { ok: false, error: "Nicht angemeldet." } });
-
-    const result = await sendChat([{ role: "user", content: "hi" }]);
-
-    expect(result).toEqual({
-      ok: false,
-      status: 401,
-      error: "Nicht angemeldet.",
-    });
-  });
-
-  it("reports a network error as status 0", async () => {
-    mockFetch({ reject: true });
-
-    const result = await sendChat([{ role: "user", content: "hi" }]);
-
-    expect(result).toEqual({
-      ok: false,
-      status: 0,
-      error: "Modell nicht erreichbar.",
-    });
-  });
-});
 
 describe("fetchStats", () => {
   it("returns the stats on success", async () => {

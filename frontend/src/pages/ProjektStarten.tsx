@@ -8,6 +8,8 @@ import { fetchAssistSuggestions } from "../api/assist";
 import type { AssistDraft, AssistSuggestions } from "../api/assist";
 import styles from "./ProjektStarten.module.css";
 
+const ASSIST_DEBOUNCE_MS = 3000;
+
 const missingLabels: Record<string, string> = {
   service: "Leistung",
   engagement: "Art der Zusammenarbeit",
@@ -18,6 +20,7 @@ const missingLabels: Record<string, string> = {
 
 type ServiceId = "design" | "systems" | "consulting" | "mix";
 type EngagementId = "project" | "longterm";
+type TimelineKind = "fixed" | "flexible" | "asap";
 type Status = "idle" | "loading" | "success" | "error";
 
 const services: {
@@ -78,7 +81,7 @@ export default function ProjektStarten() {
   const [service, setService] = useState<ServiceId | "">("");
   const [engagement, setEngagement] = useState<EngagementId | "">("");
   const [goal, setGoal] = useState("");
-  const [timelineKind, setTimelineKind] = useState("");
+  const [timelineKind, setTimelineKind] = useState<TimelineKind | "">("");
   const [budgetRange, setBudgetRange] = useState("");
   const [status, setStatus] = useState<Status>("idle");
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
@@ -139,7 +142,7 @@ export default function ProjektStarten() {
           : null,
       );
       setAssistLoading(false);
-    }, 3000);
+    }, ASSIST_DEBOUNCE_MS);
 
     return () => {
       window.clearTimeout(timer);
@@ -208,7 +211,7 @@ export default function ProjektStarten() {
 
     setStatus("loading");
     try {
-      const response = await fetch("/api/project/submit.php", {
+      const response = await fetch("/api/v1/projects", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
@@ -353,7 +356,9 @@ export default function ProjektStarten() {
                       id="timelineKind"
                       className={styles.input}
                       value={timelineKind}
-                      onChange={(event) => setTimelineKind(event.target.value)}
+                      onChange={(event) =>
+                        setTimelineKind(event.target.value as TimelineKind | "")
+                      }
                     >
                       <option value="">Keine Angabe</option>
                       <option value="asap">So schnell wie möglich</option>

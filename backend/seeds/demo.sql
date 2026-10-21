@@ -1,0 +1,18 @@
+INSERT INTO contacts (id, email, phone, title, message, ip, created_at) VALUES
+('c1a2b3d4e5f60701', 's.wagner@triova.de', '+49 30 987654', 'Printmaterial für Messe', 'Für eine Messe im Frühjahr brauchen wir Flyer, Roll-ups und eine kompakte Broschüre im bestehenden Markendesign.', '203.0.113.11', DATE_SUB(UTC_TIMESTAMP(), INTERVAL 2 HOUR)),
+('c1a2b3d4e5f60702', 'info@schraemmer.de', '', 'Frage zu Wartung', 'Wir betreiben eine kleine Web-App und möchten wissen, ob ihr auch Wartung und Weiterentwicklung übernehmt.', '203.0.113.12', DATE_SUB(UTC_TIMESTAMP(), INTERVAL 1 DAY)),
+('c1a2b3d4e5f60703', 'm.berger@finke-handwerk.de', '+49 531 112233', 'Automatisierung von Angeboten', 'Könnt ihr unseren Prozess zur Angebotserstellung automatisieren? Aktuell machen wir das noch manuell in Excel.', '203.0.113.13', DATE_SUB(UTC_TIMESTAMP(), INTERVAL 2 DAY)),
+('c1a2b3d4e5f60704', 'kontakt@mueller-immobilien.de', '+49 531 445566', 'Zusammenarbeit langfristig', 'Wir suchen eine Agentur für eine laufende Betreuung unserer Website und Marketingmaterialien.', '203.0.113.14', DATE_SUB(UTC_TIMESTAMP(), INTERVAL 3 DAY)),
+('c1a2b3d4e5f60705', 'lena.hoffmann@beispiel.de', '', 'Logo-Überarbeitung', 'Unser Logo ist in die Jahre gekommen. Wir hätten gerne eine Auffrischung, ohne die Wiedererkennung zu verlieren.', '203.0.113.15', DATE_SUB(UTC_TIMESTAMP(), INTERVAL 8 DAY)),
+('c1a2b3d4e5f60706', 'altbestand@beispiel.de', '+49 40 000111', 'Alte Anfrage', 'Diese Nachricht stammt aus einer früheren Woche und dient nur als Beispieldatensatz.', '203.0.113.16', DATE_SUB(UTC_TIMESTAMP(), INTERVAL 20 DAY));
+
+INSERT INTO projects (
+    id, service, engagement, goal, timeline_kind, timeline_date,
+    budget_range, budget_unknown, contact_name, contact_company,
+    contact_email, contact_phone, consent, status, ip, created_at
+) VALUES
+('a1b2c3d4e5f60801', 'design', 'project', 'Wir sind ein Handwerksbetrieb und brauchen eine neue Website, über die Kunden einfach Termine anfragen können. Wichtig sind eine Galerie unserer Projekte und ein klarer Kontaktbereich.', 'fixed', DATE_ADD(UTC_DATE(), INTERVAL 60 DAY), '5-10k', 0, 'Max Finke', 'Finke GmbH', 'max@finke-handwerk.de', '+49 531 234567', 1, 'new', '203.0.113.21', DATE_SUB(UTC_TIMESTAMP(), INTERVAL 3 HOUR)),
+('a1b2c3d4e5f60802', 'systems', 'longterm', 'Wir möchten unsere internen Abläufe automatisieren und verschiedene Systeme wie CRM und Rechnungsstellung miteinander verbinden. Aktuell läuft vieles manuell.', 'asap', NULL, NULL, 1, 'Sofia Wagner', 'Triova', 's.wagner@triova.de', '+49 30 987654', 1, 'new', '203.0.113.22', DATE_SUB(UTC_TIMESTAMP(), INTERVAL 1 DAY)),
+('a1b2c3d4e5f60803', 'consulting', 'project', 'Unsere Marke wirkt uneinheitlich über die Kanäle. Wir brauchen eine klare Positionierung und ein Strategiepapier als Grundlage für alle weiteren Maßnahmen.', 'flexible', NULL, '10-25k', 0, 'Jonas Keller', 'Schrämmer', 'j.keller@schraemmer.de', '', 1, 'new', '203.0.113.23', DATE_SUB(UTC_TIMESTAMP(), INTERVAL 2 DAY)),
+('a1b2c3d4e5f60804', 'mix', 'longterm', 'Wir starten ein neues Produkt und brauchen Marke, Website und die dazugehörige Software aus einer Hand - langfristig begleitet.', 'flexible', NULL, NULL, 0, 'Anna Berger', 'Neues Produkt UG', 'anna@neuesprodukt.de', '+49 40 555666', 1, 'new', '203.0.113.24', DATE_SUB(UTC_TIMESTAMP(), INTERVAL 5 DAY)),
+('a1b2c3d4e5f60805', 'design', 'project', 'Ein kompaktes Redesign unseres Logos und eine kurze Markenrichtlinie. Einsatz vor allem im Printbereich.', 'asap', NULL, '<5k', 0, 'Lena Hoffmann', '', 'lena@beispiel.de', '', 1, 'done', '203.0.113.25', DATE_SUB(UTC_TIMESTAMP(), INTERVAL 15 DAY));

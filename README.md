@@ -1,167 +1,143 @@
 # Stadtlöwe
 
-Website + internal backend for Stadtlöwe (Design · Systems · Consulting).
+Website, admin dashboard and local AI assistant. The platform runs as five
+containers:
 
-## Structure
+| Service | Stack | Exposure | Docs |
+|---------|-------|----------|------|
+| `frontend` | React + nginx | published on `:8080` | [docs/frontend.md](./docs/frontend.md) |
+| `backend` | Node.js + Fastify + TypeScript | internal | [docs/backend.md](./docs/backend.md) |
+| `ml` | Python + FastAPI | internal | [docs/ml.md](./docs/ml.md) |
+| `llama` | llama.cpp + GGUF | internal | [docs/llama.md](./docs/llama.md) |
+| `db` | MySQL 8.4 | internal | [docs/database.md](./docs/database.md) |
 
+Only the frontend is published. The frontend cannot resolve `ml` or `llama`;
+the Node backend is the only ML client.
+
+```text
+Browser
+  └─ frontend (nginx :8080)
+       └─ /api/* ──> backend (Fastify)
+                       ├─ MySQL
+                       └─ ml (FastAPI)
+                            └─ llama (llama.cpp)
 ```
-frontend/   React app (Vite + TypeScript) → builds to static files
-backend/    PHP API + local ML layer
-  api/      PHP endpoints (served under /api/...)
-  src/      shared PHP code
-  ml/       GGUF model files (gitignored)
-  tools/    bundled llama.cpp runtime (gitignored)
-```
 
-## Frontend
-
-React single-page app. `npm run build` produces static assets that can be hosted anywhere.
+## Quick start
 
 ```bash
-cd frontend
-npm install
-npm run dev      # dev server -> http://localhost:5173
-npm run build    # -> frontend/dist (static files)
-npm run preview  # preview the production build
+cp .env.example .env
+docker compose up --build
 ```
 
-In development, requests to `/api/*` are proxied to the PHP API at `http://localhost:8000`.
+- Website: <http://localhost:8080>
+- Admin: <http://localhost:8080/admin>
+- API docs: <http://localhost:8080/api/docs>
+- Health: <http://localhost:8080/api/v1/health>
 
-### Testing & quality
+Default admin credentials:
+
+```text
+admin@example.com / testPass123
+```
+
+Put your `.gguf` in `ml/models/` and set `AI_MODEL_FILE` in `.env`. The default
+setup uses CUDA; see [docs/llama.md](./docs/llama.md) for CPU fallback and GPU
+memory notes.
+
+## API contracts and auth
+
+The backend publishes OpenAPI at `/api/openapi.json` and Swagger UI at
+`/api/docs`. The frontend uses generated types with `openapi-fetch`.
 
 ```bash
-cd frontend
-npm test         # unit/component tests (Vitest + Testing Library)
-npm run coverage # coverage report
-npm run e2e      # end-to-end smoke tests (Playwright)
-npm run lint     # ESLint
+npm run api:sync      # backend spec -> frontend/src/api/schema.d.ts
 ```
 
-- Unit/component tests live next to the code as `*.test.tsx`.
-- `src/App.a11y.test.tsx` runs **axe** over the main routes; color contrast is
-  out of scope there (jsdom has no rendering) and should be audited in a browser.
-- E2E needs a browser once: `npx playwright install chromium`.
+Admin auth issues a JWT:
 
-### SEO & accessibility
+- Web: `HttpOnly`, `SameSite=Lax` cookie
+- Mobile: `Authorization: Bearer <token>`
 
-- Per-route `title` / `description` / canonical / Open Graph via
-  `src/components/Seo.tsx` (React 19 document metadata) driven by
-  `src/data/seo.ts`. **Update the domain there before deploying.**
-- `public/robots.txt` and `public/sitemap.xml` are copied into `dist`. Update the
-  domain in the sitemap too.
-- The admin area is marked `noindex`.
-- Forms associate errors with inputs via `aria-invalid` / `aria-describedby`; a
-  skip link, `:focus-visible` styles and reduced-motion handling are in place.
+Admin write routes accept either cookie or Bearer. Cookie writes require a
+trusted Origin/Referer.
 
-## Backend
+`/api/v1/admin/chat/stream` streams SSE events (`tool`, `token`, `done`,
+`error`). Tool decisions are resolved non-streaming; the final answer is
+streamed.
 
-### PHP API
+See [docs/backend.md](./docs/backend.md) for the full endpoint table and
+[docs/frontend.md](./docs/frontend.md) for the client integration.
+
+## Repository layout
+
+```text
+backend/      Node/Fastify API, migrations, seeds, tools, tests
+ml/           FastAPI service, prompts, model files, evals, tests
+frontend/     React SPA + generated API types + nginx
+docs/         one document per service
+docker-compose.yml
+```
+
+## Development
 
 ```bash
-cd backend
-serve.bat        # runs: php -S localhost:8000  -> serves /api/...
+# frontend
+cd frontend && npm install && npm run dev       # :5173
+
+# backend
+cd backend && npm install && npm run dev        # :3000
+
+# ml
+cd ml
+python -m venv .venv
+.venv\Scripts\activate
+pip install -r requirements.txt
+uvicorn app.main:app --reload --port 8000
 ```
 
-Endpoints are served from `backend/api/`, e.g.:
+See the service docs for configuration and required environment variables.
 
-- `POST /api/contact.php`         — receive a contact request
-- `POST /api/project/submit.php`  — receive a "Projekt starten" request (→ `backend/api/projects.json`)
-- `POST /api/assist.php`          — public form-assist suggestions (see below)
-- `GET  /api/health.php`          — health check
-
-Admin (session-protected):
-
-- `POST /api/admin/login.php`     — sign in (credentials from `backend/.env`)
-- `POST /api/admin/logout.php`    — sign out
-- `GET  /api/admin/me.php`        — current session
-- `GET  /api/admin/stats.php`     — today/this-week counts: contact + project requests, plus open projects (status `new`)
-- `GET  /api/admin/records.php?type=contact|project` — all records (newest first)
-- `POST /api/admin/chat.php`      — chat with the local model; reads records via read-only tools
-
-### Form assist (public)
-
-`POST /api/assist.php` powers the suggestions shown while a visitor fills the
-"Projekt starten" form (debounced on the frontend). It is unauthenticated but
-has **no data access**: it only receives the visitor's own draft, wraps it as
-untrusted data, and returns `{ summary, suggestions[], missing[] }`.
-
-- **Behavior, tone and output format:** `backend/prompts/assist.md`
-- **Goals / target of the feature (edit freely):** `backend/prompts/assist_goals.md`
-- Both are combined via `AI_ASSIST_PROMPTS` in `backend/.env`.
-- Rate-limited per client IP via `ASSIST_RATE_LIMIT` / `ASSIST_RATE_WINDOW`
-  (defaults: 20 requests / 60 s).
-- `missing` is derived server-side from the draft, never by the model.
-
-### Seed data
-
-`backend/api/sample_messages.json` and `backend/api/sample_projects.json` hold
-realistic seed data. Reset the live files from them with:
+## Checks
 
 ```bash
-backend\reset-data.bat
+# backend
+cd backend && npm run typecheck && npm test && npm run build
+
+# ml
+cd ml && pytest
+docker compose exec ml python scripts/eval_assist.py
+
+# frontend
+cd frontend && npm test && npm run lint && npm run build && npm run e2e
 ```
 
-The `createdAt` values are shifted on reset so the newest record becomes "now" —
-keeping the dashboard's today/this-week counts meaningful.
-
-### ML layer (local, not exposed)
-
-A local `llama.cpp` server loads the GGUF model and listens on `127.0.0.1` only —
-it is called internally by the API and is never exposed to the public.
+## Reset demo data
 
 ```bash
-cd backend
-run-model.bat    # -> llama-server on http://127.0.0.1:8080 (--no-webui)
+docker compose down -v
+docker compose up -d
 ```
 
-- On first run, `setup-model.ps1` automatically downloads the llama.cpp runtime into `backend/tools/`.
-- Put one or more `.gguf` files in `backend/ml/`; the first one is loaded.
-- Override with env vars: `AI_MODEL_PATH` (model file) and `AI_PORT` (default `8080`).
+`down -v` deletes the MySQL volume. The backend recreates the schema and inserts
+demo data when `SEED_DEMO=1`.
 
-The PHP backend talks to the model via `AI_BASE_URL` / `AI_MODEL` / `AI_TIMEOUT` in `backend/.env`.
-The model is only reachable on `127.0.0.1` and is used for the admin chat and the
-public form-assist suggestions.
+## Security summary
 
-### Prompts
+- Backend, ML, llama and MySQL have no published host ports.
+- Admin passwords are bcrypt hashes in MySQL.
+- JWT issuer/audience/role are verified.
+- Cookie writes require a trusted Origin/Referer.
+- Login, contact, project and assist endpoints are rate-limited.
+- ML uses a shared service key and has no database access.
+- Admin tools are whitelisted, read-only and argument-validated.
+- Customer text and tool results are wrapped as `<untrusted_data>`.
+- Security headers and request IDs are set across the stack.
 
-System prompts live in `backend/prompts/*.md` and are composed by `src/prompts.php`.
-A module is referenced by file name (without `.md`). Which modules each surface
-uses is set in `backend/.env`:
+## Documentation
 
-- **Admin chat** (`api/admin/chat.php`): `AI_ADMIN_PROMPTS` (default `persona,domain,admin`)
-- **Form assist** (`api/assist.php`): `AI_ASSIST_PROMPTS` (default `assist,assist_goals`)
-- `AI_PROMPTS` — generic fallback used when `build_system_prompt()` is called
-  without an explicit list
-
-Files:
-
-- `persona.md` — identity, tone and language
-- `domain.md` — what Stadtlöwe does and how to read the stored contact/project requests
-- `admin.md` — admin chat: tool usage + untrusted-data rules
-- `assist.md` — form assist: behavior, tone and output format
-- `assist_goals.md` — form assist: goals/target of the feature (edit freely)
-
-To extend a surface, add a new `.md` file in `backend/prompts/` and list its name
-in the matching env var.
-
-## Typical development session
-
-```bash
-# terminal 1 - local model
-cd backend
-run-model.bat
-
-# terminal 2 - PHP API
-cd backend
-serve.bat
-
-# terminal 3 - frontend
-cd frontend
-npm run dev
-```
-
-## Requirements
-
-- Node.js 18+
-- PHP 8+
-- Windows (for the `.bat` scripts) — the `php -S ...` and `llama-server` commands work on other platforms directly.
+- [Frontend](./docs/frontend.md)
+- [Backend](./docs/backend.md)
+- [ML service](./docs/ml.md)
+- [llama runtime](./docs/llama.md)
+- [Database](./docs/database.md)

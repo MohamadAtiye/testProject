@@ -4,7 +4,7 @@ import Button from "../../components/Button";
 import { loginAdmin } from "../api";
 import styles from "./AdminLogin.module.css";
 
-const TEST_EMAIL = "admin@mail.com";
+const TEST_EMAIL = "admin@example.com";
 const TEST_PASSWORD = "testPass123";
 
 type AdminLoginProps = {

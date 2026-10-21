@@ -1,15 +1,11 @@
-export type Bucket = {
-  today: number;
-  week: number;
-  total: number;
-};
+import { api, apiErrorMessage } from "../api/client";
+import type { paths } from "../api/schema";
 
-export type Stats = {
-  generatedAt: string;
-  contact: Bucket;
-  project: Bucket;
-  openProjects: Bucket;
-};
+type StatsResponse =
+  paths["/api/v1/admin/stats"]["get"]["responses"][200]["content"]["application/json"];
+
+export type Stats = Omit<StatsResponse, "ok">;
+export type Bucket = Stats["contact"];
 
 export type StatsResult =
   | { ok: true; stats: Stats }
@@ -17,33 +13,21 @@ export type StatsResult =
 
 export type RecordType = "contact" | "project";
 
-export type ContactRecord = {
-  id: string;
-  email: string;
-  phone?: string;
-  title: string;
-  message: string;
-  createdAt: string;
-};
+type RecordsResponse =
+  paths["/api/v1/admin/records"]["get"]["responses"][200]["content"]["application/json"];
 
-export type ProjectRecord = {
-  id: string;
-  service: string;
-  engagement: string;
-  goal: string;
-  timeline?: { kind: string; date?: string | null } | null;
-  budget?: { range?: string | null; unknown?: boolean } | null;
-  contact: { name: string; company?: string; email: string; phone?: string };
-  createdAt: string;
-};
-
-export type AdminRecord = ContactRecord | ProjectRecord;
+export type AdminRecord = RecordsResponse["records"][number];
+export type ContactRecord = Extract<AdminRecord, { title: string }>;
+export type ProjectRecord = Extract<AdminRecord, { service: string }>;
 
 export type RecordsResult =
   | { ok: true; records: AdminRecord[] }
   | { ok: false; status: number };
 
-export type ChatMessage = { role: "user" | "assistant"; content: string };
+type ChatRequest =
+  paths["/api/v1/admin/chat"]["post"]["requestBody"]["content"]["application/json"];
+
+export type ChatMessage = ChatRequest["messages"][number];
 
 export type ChatResult =
   | { ok: true; reply: string }
@@ -51,16 +35,11 @@ export type ChatResult =
 
 export async function fetchSession(): Promise<string | null> {
   try {
-    const response = await fetch("/api/admin/me.php", {
-      credentials: "same-origin",
-    });
-    if (!response.ok) {
+    const { data, response } = await api.GET("/api/v1/admin/me");
+    if (!response.ok || !data) {
       return null;
     }
-    const data = (await response.json().catch(() => null)) as
-      | { email?: string }
-      | null;
-    return data?.email ?? null;
+    return data.email;
   } catch {
     return null;
   }
@@ -71,19 +50,15 @@ export async function loginAdmin(
   password: string,
 ): Promise<{ ok: boolean; error?: string }> {
   try {
-    const response = await fetch("/api/admin/login.php", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      credentials: "same-origin",
-      body: JSON.stringify({ email, password }),
+    const { data, error, response } = await api.POST("/api/v1/admin/login", {
+      body: { email, password },
     });
 
-    const data = (await response.json().catch(() => null)) as
-      | { ok?: boolean; error?: string }
-      | null;
-
-    if (!response.ok || !data?.ok) {
-      return { ok: false, error: data?.error ?? "Ungültige Zugangsdaten." };
+    if (!response.ok || !data) {
+      return {
+        ok: false,
+        error: apiErrorMessage(error, "Ungültige Zugangsdaten."),
+      };
     }
 
     return { ok: true };
@@ -94,29 +69,29 @@ export async function loginAdmin(
 
 export async function logoutAdmin(): Promise<void> {
   try {
-    await fetch("/api/admin/logout.php", {
-      method: "POST",
-      credentials: "same-origin",
-    });
+    await api.POST("/api/v1/admin/logout");
   } catch {
-    // ignore - the UI resets regardless
+    // The UI resets regardless.
   }
 }
 
 export async function fetchStats(): Promise<StatsResult> {
   try {
-    const response = await fetch("/api/admin/stats.php", {
-      credentials: "same-origin",
-    });
-    const data = (await response.json().catch(() => null)) as
-      | (Stats & { ok?: boolean })
-      | null;
+    const { data, response } = await api.GET("/api/v1/admin/stats");
 
-    if (!response.ok || !data?.ok) {
+    if (!response.ok || !data) {
       return { ok: false, status: response.status };
     }
 
-    return { ok: true, stats: data };
+    return {
+      ok: true,
+      stats: {
+        generatedAt: data.generatedAt,
+        contact: data.contact,
+        project: data.project,
+        openProjects: data.openProjects,
+      },
+    };
   } catch {
     return { ok: false, status: 0 };
   }
@@ -124,14 +99,11 @@ export async function fetchStats(): Promise<StatsResult> {
 
 export async function fetchRecords(type: RecordType): Promise<RecordsResult> {
   try {
-    const response = await fetch(`/api/admin/records.php?type=${type}`, {
-      credentials: "same-origin",
+    const { data, response } = await api.GET("/api/v1/admin/records", {
+      params: { query: { type } },
     });
-    const data = (await response.json().catch(() => null)) as
-      | { ok?: boolean; records?: AdminRecord[] }
-      | null;
 
-    if (!response.ok || !data?.ok || !Array.isArray(data.records)) {
+    if (!response.ok || !data) {
       return { ok: false, status: response.status };
     }
 
@@ -141,29 +113,115 @@ export async function fetchRecords(type: RecordType): Promise<RecordsResult> {
   }
 }
 
-export async function sendChat(messages: ChatMessage[]): Promise<ChatResult> {
+
+type StreamEvent =
+  | { type: "token"; content: string }
+  | { type: "tool"; name: string }
+  | { type: "done"; reply: string }
+  | { type: "error"; error: string };
+
+export async function sendChatStream(
+  messages: ChatMessage[],
+  onToken: (token: string) => void,
+  signal?: AbortSignal,
+): Promise<ChatResult> {
   try {
-    const response = await fetch("/api/admin/chat.php", {
+    const response = await fetch("/api/v1/admin/chat/stream", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       credentials: "same-origin",
       body: JSON.stringify({ messages }),
+      signal,
     });
 
-    const data = (await response.json().catch(() => null)) as
-      | { ok?: boolean; reply?: string; error?: string }
-      | null;
+    if (!response.ok) {
+      const body = (await response.json().catch(() => null)) as
+        | { error?: string }
+        | null;
 
-    if (!response.ok || !data?.ok || typeof data.reply !== "string") {
       return {
         ok: false,
         status: response.status,
-        error: data?.error ?? "Antwort fehlgeschlagen.",
+        error: body?.error ?? "Antwort fehlgeschlagen.",
       };
     }
 
-    return { ok: true, reply: data.reply };
-  } catch {
+    if (!response.body) {
+      return { ok: false, status: 0, error: "Keine Antwort erhalten." };
+    }
+
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder();
+    let buffer = "";
+    let reply = "";
+
+    const handleFrame = (frame: string): string | null => {
+      const data = frame
+        .split("\n")
+        .filter((line) => line.startsWith("data:"))
+        .map((line) => line.slice(5).trim())
+        .join("\n");
+
+      if (data === "") {
+        return null;
+      }
+
+      let event: StreamEvent;
+      try {
+        event = JSON.parse(data) as StreamEvent;
+      } catch {
+        return null;
+      }
+
+      if (event.type === "token") {
+        onToken(event.content);
+      } else if (event.type === "done") {
+        reply = event.reply;
+      } else if (event.type === "error") {
+        return event.error;
+      }
+
+      return null;
+    };
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) {
+        break;
+      }
+
+      buffer += decoder.decode(value, { stream: true }).replace(/\r/g, "");
+      let boundary = buffer.indexOf("\n\n");
+
+      while (boundary !== -1) {
+        const frame = buffer.slice(0, boundary);
+        buffer = buffer.slice(boundary + 2);
+        const streamError = handleFrame(frame);
+
+        if (streamError) {
+          return { ok: false, status: 502, error: streamError };
+        }
+
+        boundary = buffer.indexOf("\n\n");
+      }
+    }
+
+    if (buffer.trim() !== "") {
+      const streamError = handleFrame(buffer);
+      if (streamError) {
+        return { ok: false, status: 502, error: streamError };
+      }
+    }
+
+    if (reply === "") {
+      return { ok: false, status: 502, error: "Keine Antwort erhalten." };
+    }
+
+    return { ok: true, reply };
+  } catch (error) {
+    if (error instanceof DOMException && error.name === "AbortError") {
+      return { ok: false, status: 0, error: "" };
+    }
     return { ok: false, status: 0, error: "Modell nicht erreichbar." };
   }
 }

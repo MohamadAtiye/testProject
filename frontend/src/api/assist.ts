@@ -1,10 +1,10 @@
-export type AssistDraft = {
-  service?: string;
-  engagement?: string;
-  goal?: string;
-  timeline?: { kind: string; date?: string };
-  budget?: { range?: string; unknown?: boolean };
-};
+import { api, apiErrorMessage } from "./client";
+import type { paths } from "./schema";
+
+type AssistRequest =
+  paths["/api/v1/assist"]["post"]["requestBody"]["content"]["application/json"];
+
+export type AssistDraft = AssistRequest;
 
 export type AssistSuggestions = {
   summary: string;
@@ -21,43 +21,29 @@ export async function fetchAssistSuggestions(
   signal?: AbortSignal,
 ): Promise<AssistResult> {
   try {
-    const response = await fetch("/api/assist.php", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(draft),
+    const { data, error, response } = await api.POST("/api/v1/assist", {
+      body: draft,
       signal,
     });
 
-    const data = (await response.json().catch(() => null)) as
-      | {
-          ok?: boolean;
-          summary?: string;
-          suggestions?: unknown;
-          missing?: unknown;
-          error?: string;
-        }
-      | null;
-
-    if (!response.ok || !data?.ok) {
+    if (!response.ok || !data) {
       return {
         ok: false,
-        error: data?.error ?? "Vorschläge derzeit nicht verfügbar.",
+        error: apiErrorMessage(error, "Vorschläge derzeit nicht verfügbar."),
       };
     }
-
-    const suggestions = Array.isArray(data.suggestions)
-      ? data.suggestions.filter((item): item is string => typeof item === "string")
-      : [];
-
-    const missing = Array.isArray(data.missing)
-      ? data.missing.filter((item): item is string => typeof item === "string")
-      : [];
 
     return {
       ok: true,
       summary: typeof data.summary === "string" ? data.summary : "",
-      suggestions,
-      missing,
+      suggestions: Array.isArray(data.suggestions)
+        ? data.suggestions.filter(
+            (item): item is string => typeof item === "string",
+          )
+        : [],
+      missing: Array.isArray(data.missing)
+        ? data.missing.filter((item) => typeof item === "string")
+        : [],
     };
   } catch (error) {
     if (error instanceof DOMException && error.name === "AbortError") {

@@ -1,0 +1,159 @@
+name: stadtloewe
+
+services:
+  db:
+    image: mysql:8.4
+    environment:
+      MYSQL_DATABASE: ${DB_NAME:-stadtloewe}
+      MYSQL_USER: ${DB_USER:-stadtloewe}
+      MYSQL_PASSWORD: ${DB_PASSWORD:-stadtloewe}
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-stadtloewe-root}
+    volumes:
+      - db-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -u root -p$$MYSQL_ROOT_PASSWORD --silent"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+    restart: unless-stopped
+    networks:
+      - internal
+
+  llama:
+    # CUDA by default. For CPU-only Docker use server, AI_NGL=0 and remove `gpus`.
+    image: ${ML_IMAGE:-ghcr.io/ggml-org/llama.cpp:server-cuda}
+    gpus: all
+    command:
+      - "-m"
+      - "/models/${AI_MODEL_FILE:-Qwen3.5-4B-UD-Q4_K_XL.gguf}"
+      - "--host"
+      - "0.0.0.0"
+      - "--port"
+      - "8080"
+      - "-c"
+      - "${AI_CTX:-4096}"
+      - "-ngl"
+      - "${AI_NGL:-99}"
+      - "-t"
+      - "${AI_THREADS:-4}"
+      - "-np"
+      - "1"
+      - "-fa"
+      - "on"
+      - "-ctk"
+      - "q8_0"
+      - "-ctv"
+      - "q8_0"
+      - "--jinja"
+      - "--no-webui"
+    volumes:
+      - ./ml/models:/models:ro
+    expose:
+      - "8080"
+    restart: unless-stopped
+    networks:
+      - internal
+
+  ml:
+    build:
+      context: ./ml
+    environment:
+      LLAMA_BASE_URL: http://llama:8080
+      LLAMA_TIMEOUT: "120"
+      ML_API_KEY: ${ML_API_KEY:-dev-ml-key}
+      MODEL_NAME: local
+      ADMIN_PROMPTS: persona,domain,admin
+      ASSIST_PROMPTS: assist,assist_goals
+      LOG_LEVEL: info
+    depends_on:
+      llama:
+        condition: service_started
+    expose:
+      - "8000"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health', timeout=3)"]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+      start_period: 60s
+    restart: unless-stopped
+    networks:
+      - internal
+
+  backend:
+    build:
+      context: ./backend
+    environment:
+      NODE_ENV: production
+      PORT: "3000"
+      LOG_LEVEL: info
+
+      DB_HOST: db
+      DB_PORT: "3306"
+      DB_NAME: ${DB_NAME:-stadtloewe}
+      DB_USER: ${DB_USER:-stadtloewe}
+      DB_PASSWORD: ${DB_PASSWORD:-stadtloewe}
+
+      JWT_SECRET: ${JWT_SECRET:-dev-only-change-me-please-32-chars-min}
+      JWT_ISSUER: stadtloewe
+      JWT_AUDIENCE: stadtloewe-api
+      JWT_EXPIRES_IN: 1h
+      JWT_COOKIE_MAX_AGE_SECONDS: "3600"
+
+      COOKIE_SECURE: ${COOKIE_SECURE:-0}
+      TRUST_PROXY: "1"
+      ALLOWED_ORIGINS: ${APP_ORIGIN:-http://localhost:8080,http://127.0.0.1:8080}
+
+      ADMIN_EMAIL: ${ADMIN_EMAIL:-admin@example.com}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-testPass123}
+      SEED_DEMO: ${SEED_DEMO:-1}
+
+      ML_BASE_URL: http://ml:8000
+      ML_API_KEY: ${ML_API_KEY:-dev-ml-key}
+      ML_TIMEOUT_MS: "120000"
+
+      ASSIST_RATE_LIMIT: "20"
+      ASSIST_RATE_WINDOW_MS: "60000"
+      LOGIN_RATE_LIMIT: "5"
+      LOGIN_RATE_WINDOW_MS: "300000"
+      CONTACT_RATE_LIMIT: "10"
+      PROJECT_RATE_LIMIT: "10"
+      RATE_WINDOW_MS: "60000"
+      METRICS_TOKEN: ${METRICS_TOKEN:-local-metrics-token}
+    depends_on:
+      db:
+        condition: service_healthy
+      ml:
+        condition: service_started
+    expose:
+      - "3000"
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3000/api/v1/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 20s
+    restart: unless-stopped
+    networks:
+      - public
+      - internal
+
+  frontend:
+    build:
+      context: ./frontend
+    ports:
+      - "${APP_PORT:-8080}:80"
+    depends_on:
+      backend:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - public
+
+networks:
+  public:
+  internal:
+    internal: true
+
+volumes:
+  db-data:

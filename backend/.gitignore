@@ -1,6 +1,5 @@
-# Local model + bundled runtime (large, not for version control)
-ml/
-tools/
-
-# Secrets
+node_modules/
+dist/
 .env
+openapi.json
+coverage/

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   Avatar,
   ChatContainer,
@@ -12,7 +12,7 @@ import "@chatscope/chat-ui-kit-styles/dist/default/styles.min.css";
 import ReactMarkdown from "react-markdown";
 import Button from "../../components/Button";
 import Icon from "../../components/Icon";
-import { sendChat } from "../api";
+import { sendChatStream } from "../api";
 import type { ChatMessage } from "../api";
 import styles from "./AdminChat.module.css";
 
@@ -31,6 +31,8 @@ export default function AdminChat({ onLogout }: AdminChatProps) {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [streamingReply, setStreamingReply] = useState("");
+  const abortRef = useRef<AbortController | null>(null);
 
   async function send(text: string) {
     const value = text.trim();
@@ -40,29 +42,56 @@ export default function AdminChat({ onLogout }: AdminChatProps) {
 
     const next: ChatMessage[] = [...messages, { role: "user", content: value }];
     setMessages(next);
+    setStreamingReply("");
     setLoading(true);
     setError("");
 
-    const result = await sendChat(next);
+    const controller = new AbortController();
+    abortRef.current = controller;
+
+    const result = await sendChatStream(
+      next,
+      (token) => setStreamingReply((current) => current + token),
+      controller.signal,
+    );
+
+    if (controller.signal.aborted) {
+      setLoading(false);
+      setStreamingReply("");
+      return;
+    }
+
+    abortRef.current = null;
 
     if (!result.ok) {
       if (result.status === 401) {
         onLogout();
         return;
       }
+
       setError(result.error);
       setLoading(false);
+      setStreamingReply("");
       return;
     }
 
     setMessages([...next, { role: "assistant", content: result.reply }]);
+    setStreamingReply("");
     setLoading(false);
   }
 
   function clear() {
+    abortRef.current?.abort();
+    abortRef.current = null;
     setMessages([]);
+    setStreamingReply("");
     setError("");
+    setLoading(false);
   }
+
+  useEffect(() => {
+    return () => abortRef.current?.abort();
+  }, []);
 
   return (
     <section className={styles.card}>
@@ -95,7 +124,7 @@ export default function AdminChat({ onLogout }: AdminChatProps) {
               autoScrollToBottom
               scrollBehavior="smooth"
               typingIndicator={
-                loading ? (
+                loading && streamingReply === "" ? (
                   <TypingIndicator content="Modell antwortet …" />
                 ) : undefined
               }
@@ -126,34 +155,56 @@ export default function AdminChat({ onLogout }: AdminChatProps) {
                   </div>
                 </MessageList.Content>
               ) : (
-                messages.map((message, index) => {
-                  const incoming = message.role === "assistant";
+                <>
+                  {messages.map((message, index) => {
+                    const incoming = message.role === "assistant";
 
-                  return (
+                    return (
+                      <Message
+                        key={index}
+                        model={{
+                          message: incoming ? undefined : message.content,
+                          sender: incoming ? "Modell" : "Admin",
+                          direction: incoming ? "incoming" : "outgoing",
+                          position: "single",
+                        }}
+                        avatarPosition={incoming ? "tl" : "tr"}
+                      >
+                        <Avatar size="sm" className={styles.avatar}>
+                          <Icon
+                            name={incoming ? "sparkles" : "people"}
+                            size={15}
+                          />
+                        </Avatar>
+                        {incoming && (
+                          <Message.CustomContent>
+                            <ReactMarkdown>{message.content}</ReactMarkdown>
+                          </Message.CustomContent>
+                        )}
+                      </Message>
+                    );
+                  })}
+
+                  {streamingReply !== "" && (
                     <Message
-                      key={index}
+                      key="streaming"
                       model={{
-                        message: incoming ? undefined : message.content,
-                        sender: incoming ? "Modell" : "Admin",
-                        direction: incoming ? "incoming" : "outgoing",
+                        message: undefined,
+                        sender: "Modell",
+                        direction: "incoming",
                         position: "single",
                       }}
-                      avatarPosition={incoming ? "tl" : "tr"}
+                      avatarPosition="tl"
                     >
                       <Avatar size="sm" className={styles.avatar}>
-                        <Icon
-                          name={incoming ? "sparkles" : "people"}
-                          size={15}
-                        />
+                        <Icon name="sparkles" size={15} />
                       </Avatar>
-                      {incoming && (
-                        <Message.CustomContent>
-                          <ReactMarkdown>{message.content}</ReactMarkdown>
-                        </Message.CustomContent>
-                      )}
+                      <Message.CustomContent>
+                        <ReactMarkdown>{streamingReply}</ReactMarkdown>
+                      </Message.CustomContent>
                     </Message>
-                  );
-                })
+                  )}
+                </>
               )}
             </MessageList>
 
