@@ -30,17 +30,17 @@ export function adminTools(): OpenAiTool[] {
       type: "function",
       function: {
         name: "read_contact_messages",
-        description: "Liest allgemeine Kontaktanfragen. Neueste zuerst.",
+        description: "Reads general contact requests. Newest first.",
         parameters: {
           type: "object",
           properties: {
             since: {
               type: "string",
-              description: "Optional: nur Anfragen ab diesem Datum (YYYY-MM-DD).",
+              description: "Optional: only requests from this date onward (YYYY-MM-DD).",
             },
             limit: {
               type: "integer",
-              description: "Optional: maximale Anzahl (1-50), Standard 20.",
+              description: "Optional: maximum number (1-50), default 20.",
             },
           },
           additionalProperties: false,
@@ -51,13 +51,13 @@ export function adminTools(): OpenAiTool[] {
       type: "function",
       function: {
         name: "read_project_requests",
-        description: "Liest Projektanfragen. Neueste zuerst.",
+        description: "Reads project requests. Newest first.",
         parameters: {
           type: "object",
           properties: {
             since: {
               type: "string",
-              description: "Optional: nur Anfragen ab diesem Datum (YYYY-MM-DD).",
+              description: "Optional: only requests from this date onward (YYYY-MM-DD).",
             },
             service: {
               type: "string",
@@ -65,11 +65,11 @@ export function adminTools(): OpenAiTool[] {
             },
             status: {
               type: "string",
-              description: 'Optional: Bearbeitungsstand, z. B. "new".',
+              description: 'Optional: processing status, e.g. "new".',
             },
             limit: {
               type: "integer",
-              description: "Optional: maximale Anzahl (1-50), Standard 20.",
+              description: "Optional: maximum number (1-50), default 20.",
             },
           },
           additionalProperties: false,

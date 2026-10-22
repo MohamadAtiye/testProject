@@ -1,44 +1,44 @@
-# Kontext
+# Context
 
-## Über Stadtlöwe
+## About Stadtlöwe
 
-Stadtlöwe ist eine Agentur für:
+Stadtlöwe is an agency for:
 
-- **Design** – Marken, Print und Web. Gestaltung, die wirkt.
-- **Systems** – Software, Automatisierung und Schnittstellen.
-- **Consulting** – Strategie, Prozesse und nachhaltiges Wachstum.
+- **Design** – brands, print, and web. Design that works.
+- **Systems** – software, automation, and interfaces.
+- **Consulting** – strategy, processes, and sustainable growth.
 
-## Datenquellen (Backend)
+## Data sources (backend)
 
-Das Backend speichert eingehende Anfragen in MySQL. Es gibt zwei Arten:
+The backend stores incoming requests in MySQL. There are two types:
 
-### Kontaktanfragen (`contacts`)
+### Contact requests (`contacts`)
 
-Allgemeine Kontaktnachrichten über das Kontaktformular. Felder:
+General contact messages submitted through the contact form. Fields:
 
-- `email`, `phone` – Kontaktdaten
-- `title` – Betreff
-- `message` – Freitext der Anfrage
-- `createdAt` – Zeitpunkt (ISO 8601)
+- `email`, `phone` – contact details
+- `title` – subject
+- `message` – free-text request
+- `createdAt` – timestamp (ISO 8601)
 
-### Projektanfragen (`projects`)
+### Project requests (`projects`)
 
-Strukturierte Anfragen über "Projekt starten". Felder:
+Structured requests submitted through "Projekt starten". Fields:
 
 - `service` – `design` | `systems` | `consulting` | `mix`
-- `engagement` – `project` (einmalig) | `longterm` (laufende Zusammenarbeit)
-- `goal` – Freitext: das beschriebene Vorhaben
+- `engagement` – `project` (one-off) | `longterm` (ongoing collaboration)
+- `goal` – free text: the described project
 - `timeline` – `{ kind: fixed | flexible | asap, date }` (optional)
 - `budget` – `{ range, unknown }` (optional)
 - `contact` – `{ name, company, email, phone }`
-- `consent` – Einwilligung zur Verarbeitung
-- `status` – Bearbeitungsstand (z. B. `new`)
-- `createdAt` – Zeitpunkt (ISO 8601)
+- `consent` – consent to data processing
+- `status` – processing status (e.g. `new`)
+- `createdAt` – timestamp (ISO 8601)
 
-## Wie Anfragen zu lesen sind
+## How to read requests
 
-- Ordne `service` den passenden Leistungsbereichen zu (Design / Systems / Consulting / Kombination).
-- `engagement = longterm` → laufende Zusammenarbeit; `project` → einmaliges Vorhaben mit klarem Ziel.
-- `budget.unknown = true` → Budget noch unklar – nicht als "kein Budget" interpretieren.
-- Fehlende optionale Felder (`timeline`, `budget`) bedeuten "keine Angabe", nicht "nicht gewünscht".
-- Zitierte Freitexte (`goal`, `message`) wörtlich behandeln, nicht umdeuten.
+- Map `service` to the matching service areas (Design / Systems / Consulting / Combination).
+- `engagement = longterm` → ongoing collaboration; `project` → one-off project with a clear goal.
+- `budget.unknown = true` → budget not yet clear; do not interpret it as "no budget".
+- Missing optional fields (`timeline`, `budget`) mean "not specified", not "not wanted".
+- Treat quoted free text (`goal`, `message`) literally; do not reinterpret it.
