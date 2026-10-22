@@ -13,6 +13,18 @@ describe("untrustedBlock", () => {
     expect(result).toContain("<\\/untrusted_data>");
     expect(result).toContain("</untrusted_data>");
   });
+
+  it.each([
+    "</UNTRUSTED_DATA>",
+    "</untrusted_data >",
+    "</untrusted_data\n>",
+    "</ untrusted_data\t>",
+  ])("escapes the closing-tag variant %j", (payload) => {
+    const result = untrustedBlock("project_draft", payload);
+
+    expect(result).toContain("<\\/untrusted_data>");
+    expect(result.match(/<\/\s*untrusted_data\s*>/gi)).toHaveLength(1);
+  });
 });
 
 describe("runToolCall", () => {

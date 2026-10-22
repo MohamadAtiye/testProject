@@ -4,6 +4,7 @@ import secrets
 import time
 import uuid
 from collections.abc import AsyncIterator
+from datetime import datetime, timezone
 from typing import Annotated
 
 from fastapi import Depends, FastAPI, Header, HTTPException, Request
@@ -186,7 +187,8 @@ async def assist(request: AssistRequest) -> AssistResponse:
 
 
 def chat_messages(request: ChatRequest) -> list[dict]:
-    prompt = system_prompt(request.profile, request.context)
+    date = datetime.now(timezone.utc).date().isoformat()
+    prompt = system_prompt(request.profile, {"date": date})
 
     return [
         {"role": "system", "content": prompt},

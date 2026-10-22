@@ -129,6 +129,7 @@ export default function ProjektStarten() {
       setAssistLoading(true);
       const result = await fetchAssistSuggestions(draft, controller.signal);
       if (controller.signal.aborted) {
+        setAssistLoading(false);
         return;
       }
 

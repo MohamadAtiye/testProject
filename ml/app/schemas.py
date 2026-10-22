@@ -4,7 +4,7 @@ from pydantic import BaseModel, Field
 
 
 class Message(BaseModel):
-    role: Literal["system", "user", "assistant", "tool"]
+    role: Literal["user", "assistant", "tool"]
     content: str = ""
     tool_calls: list[dict[str, Any]] | None = None
     tool_call_id: str | None = None
@@ -14,7 +14,6 @@ class ChatRequest(BaseModel):
     profile: Literal["admin", "assist"] = "admin"
     messages: list[Message] = Field(min_length=1)
     tools: list[dict[str, Any]] | None = None
-    context: dict[str, Any] | None = None
 
 
 class AssistantMessage(BaseModel):
